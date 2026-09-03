@@ -13,7 +13,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
+import com.gean634n.audiolab.ui.theme.BlueColor
+import com.gean634n.audiolab.ui.theme.OutlineColor
 
 @Composable
 fun TriangleSlider(
@@ -32,10 +35,6 @@ fun TriangleSlider(
 
     Canvas(
         modifier = modifier
-            .size(
-                width = 300.dp,
-                height = 120.dp
-            )
             .pointerInput(Unit) {
                 detectTapGestures { offset ->
                     onValueChange( xToLevelDb(offset.x, size.width.toFloat()))
@@ -57,12 +56,12 @@ fun TriangleSlider(
 
         drawPath(
             path = path,
-            color = Color.LightGray
+            color = Color.White
         )
 
         clipPath(path) {
             drawRect(
-                color = Color.Black,
+                color = BlueColor,
                 size = Size(
                     width = size.width * progress,
                     height = size.height
@@ -70,15 +69,21 @@ fun TriangleSlider(
             )
         }
 
-//        val x = size.width * progress
-//        val y = size.height * (1f - progress)
-//
-//        drawLine(
-//            color = Color.Red,
-//            start = Offset(x, size.height),
-//            end = Offset(x, y),
-//            strokeWidth = 4f
-//        )
+        drawPath(
+            path = path,
+            color = OutlineColor,
+            style = Stroke(width = 2.dp.toPx())
+        )
+
+        val x = size.width * progress
+        val y = size.height * (1f - progress)
+
+        drawLine(
+            color = OutlineColor,
+            start = Offset(x, size.height),
+            end = Offset(x, y),
+            strokeWidth = 4f
+        )
     }
 }
 
@@ -88,6 +93,10 @@ private fun TriangleSliderPreview() {
     TriangleSlider(
         value = -12f,
         valueRange = -60f..0f,
-        onValueChange = {}
+        onValueChange = {},
+        modifier = Modifier.size(
+            width = 300.dp,
+            height = 120.dp
+        )
     )
 }

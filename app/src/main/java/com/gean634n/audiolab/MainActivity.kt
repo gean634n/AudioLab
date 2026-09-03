@@ -11,11 +11,27 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.gean634n.audiolab.audio.AudioEngine
 import com.gean634n.audiolab.ui.theme.AudioLabTheme
 
 class MainActivity : ComponentActivity() {
+    private lateinit var audioEngine: AudioEngine
+
+    override fun onStart() {
+        super.onStart()
+        audioEngine.start()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        audioEngine.stop()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        audioEngine = AudioEngine(this)
+
         enableEdgeToEdge()
         setContent {
             AudioLabTheme {

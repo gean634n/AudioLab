@@ -12,7 +12,7 @@ import kotlin.math.pow
 
 private const val MIN_FREQUENCY_HZ = 110f
 private const val MAX_FREQUENCY_HZ = 1760f
-private const val MIN_LEVEL_DB = -60f
+private const val MIN_LEVEL_DB = -30f
 private const val MAX_LEVEL_DB = 0f
 
 class TouchPadViewModel(
@@ -27,6 +27,11 @@ class TouchPadViewModel(
 
     var levelDb by mutableFloatStateOf(xToLevelDb(position.x))
         private set
+
+    init {
+        audioEngine.setLevelDb(levelDb)
+        audioEngine.setFrequencyHz(frequencyHz)
+    }
 
     fun onPositionChange(position: Offset) {
         this.position = position

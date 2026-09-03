@@ -37,6 +37,10 @@ class AudioEngine (
         PdAudio.release()
     }
 
+    fun mute() {
+        PdBase.sendFloat("level", 0f)
+    }
+
     private fun copyPatchToInternalStorage(): File {
         val patchFile = File(context.filesDir, "patch.pd")
 

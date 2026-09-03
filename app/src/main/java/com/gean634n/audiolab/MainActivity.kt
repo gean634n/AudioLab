@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.core.view.WindowCompat
 import com.gean634n.audiolab.audio.AudioEngine
+import com.gean634n.audiolab.ui.AudioLabApp
 import com.gean634n.audiolab.ui.theme.AudioLabTheme
 import com.gean634n.audiolab.ui.touchpad.TouchPadScreen
 import com.gean634n.audiolab.ui.volume.VolumeScreen
@@ -22,8 +23,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             AudioLabTheme {
-//                VolumeScreen( audioEngine = audioEngine )
-                TouchPadScreen( audioEngine = audioEngine)
+                AudioLabApp(audioEngine = audioEngine)
             }
         }
     }

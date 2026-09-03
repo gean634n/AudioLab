@@ -1,6 +1,6 @@
 #N canvas 0 35 450 300 12;
 #X obj 136 55 osc~ 440;
-#X obj 136 129 *~ 0.2;
+#X obj 136 129 *~ 0;
 #X obj 136 180 dac~;
 #X obj 201 55 r level;
 #X obj 136 16 r frequency;

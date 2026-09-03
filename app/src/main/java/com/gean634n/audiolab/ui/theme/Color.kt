@@ -12,3 +12,4 @@ val Pink40 = Color(0xFF7D5260)
 
 val OutlineColor = Color(0xFF1E1E1E)
 val BlueColor = Color(0xFFA5D8FF)
+val TransparentColor = Color(0x2A1E1E1E)

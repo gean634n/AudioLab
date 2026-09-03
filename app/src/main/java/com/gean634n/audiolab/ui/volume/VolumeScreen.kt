@@ -1,6 +1,5 @@
 package com.gean634n.audiolab.ui.volume
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -48,11 +47,11 @@ fun VolumeContent(
 
         Text(
             text = String.format("%.1f dB", levelDb),
-            modifier = Modifier.align(Alignment.TopCenter).padding(top = screenPadding),
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = screenPadding * 0.5f),
             fontSize = 12.sp,
         )
-
-
 
         TriangleSlider(
             value = levelDb,
@@ -65,6 +64,17 @@ fun VolumeContent(
                     height = availableHeight / 2
                 )
         )
+
+        Waveform(
+            levelDb = levelDb,
+            cycles = 5f,
+            modifier = Modifier
+                .padding(screenPadding, screenPadding * 2f)
+                .size(
+                    width = availableWidth,
+                    height = availableHeight
+                )
+        )
     }
 }
 
@@ -73,7 +83,7 @@ fun VolumeContent(
 fun HomePreview() {
     AudioLabTheme {
         VolumeContent(
-            levelDb = -12f,
+            levelDb = 0f,
             onLevelChange = {},
             modifier = Modifier.size(
                 width = 300.dp,

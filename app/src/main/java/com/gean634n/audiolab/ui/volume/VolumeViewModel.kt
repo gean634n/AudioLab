@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.gean634n.audiolab.audio.AudioEngine
 
-const val MIN_LEVEL_DB = -60f
+const val MIN_LEVEL_DB = -30f
 const val MAX_LEVEL_DB = 0f
 class VolumeViewModel(
     private val audioEngine: AudioEngine

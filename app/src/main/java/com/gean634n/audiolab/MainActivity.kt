@@ -4,20 +4,25 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.gean634n.audiolab.audio.AudioEngine
 import com.gean634n.audiolab.ui.volume.VolumeViewModel
 import com.gean634n.audiolab.ui.volume.VolumeViewModelFactory
 import com.gean634n.audiolab.ui.theme.AudioLabTheme
+import com.gean634n.audiolab.ui.volume.MAX_LEVEL_DB
+import com.gean634n.audiolab.ui.volume.MIN_LEVEL_DB
+import com.gean634n.audiolab.ui.volume.TriangleSlider
 
 class MainActivity : ComponentActivity() {
     private lateinit var audioEngine: AudioEngine
@@ -59,15 +64,20 @@ fun Home(
         factory = VolumeViewModelFactory(audioEngine)
     )
 ) {
-    Column(modifier = modifier) {
+    Column(modifier = modifier
+        .fillMaxSize()
+        .padding(10.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Text(
             text = "${viewModel.levelDb} dB"
         )
 
-        Slider(
+        TriangleSlider(
             value = viewModel.levelDb,
+            valueRange = MIN_LEVEL_DB..MAX_LEVEL_DB,
             onValueChange = viewModel::onLevelChange,
-            valueRange = -60f..0f
         )
     }
 
@@ -84,10 +94,10 @@ fun HomeContent(
             text = "$levelDb dB"
         )
 
-        Slider(
+        TriangleSlider(
             value = levelDb,
+            valueRange = MIN_LEVEL_DB..MAX_LEVEL_DB,
             onValueChange = onLevelChange,
-            valueRange = -60f..0f
         )
     }
 }

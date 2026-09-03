@@ -23,7 +23,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             AudioLabTheme {
 //                VolumeScreen( audioEngine = audioEngine )
-                TouchPadScreen()
+                TouchPadScreen( audioEngine = audioEngine)
             }
         }
     }

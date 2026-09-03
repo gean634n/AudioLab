@@ -38,9 +38,9 @@ class AudioEngine (
     }
 
     private fun copyPatchToInternalStorage(): File {
-        val patchFile = File(context.filesDir, "test.pd")
+        val patchFile = File(context.filesDir, "patch.pd")
 
-        context.assets.open("test.pd").use { input ->
+        context.assets.open("patch.pd").use { input ->
             patchFile.outputStream().use { output ->
                 input.copyTo(output)
             }
@@ -51,7 +51,11 @@ class AudioEngine (
 
     fun setLevelDb(db: Float) {
         val amplitude = 10f.pow(db / 20f)
-        PdBase.sendFloat("nivel", amplitude)
+        PdBase.sendFloat("level", amplitude)
+    }
+
+    fun setFrequencyHz(hz: Float) {
+        PdBase.sendFloat("frequency", hz)
     }
 }
 

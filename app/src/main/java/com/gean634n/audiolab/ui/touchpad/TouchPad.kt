@@ -1,7 +1,6 @@
 package com.gean634n.audiolab.ui.touchpad
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -37,38 +36,39 @@ fun TouchPad(
     val tiltX = normalizedY * maxTilt
     val tiltY = -normalizedX * maxTilt
 
+    // TODO: Improve touch mapping so the ball follows the finger projection on the tilted table.
     Box(
-        modifier = modifier.graphicsLayer {
-            transformOrigin = TransformOrigin.Center
-            rotationX = tiltX
-            rotationY = tiltY
-            cameraDistance = 12f * density
+        modifier = modifier .pointerInput(Unit) {
+            detectTapGestures { offset ->
+                onPositionChange(
+                    Offset(
+                        x = (offset.x / size.width).coerceIn(0f, 1f),
+                        y = (offset.y / size.height).coerceIn(0f, 1f)
+                    )
+                )
+            }
         }
+            .pointerInput(Unit) {
+                detectDragGestures { change, _ ->
+                    onPositionChange(
+                        Offset(
+                            x = (change.position.x / size.width).coerceIn(0f, 1f),
+                            y = (change.position.y / size.height).coerceIn(0f, 1f)
+                        )
+                    )
+
+                    change.consume()
+                }
+            }
     ) {
         Canvas(
             modifier = Modifier
                 .matchParentSize()
-                .pointerInput(Unit) {
-                    detectTapGestures { offset ->
-                        onPositionChange(
-                            Offset(
-                                x = (offset.x / size.width).coerceIn(0f, 1f),
-                                y = (offset.y / size.height).coerceIn(0f, 1f)
-                            )
-                        )
-                    }
-                }
-                .pointerInput(Unit) {
-                    detectDragGestures { change, _ ->
-                        onPositionChange(
-                            Offset(
-                                x = (change.position.x / size.width).coerceIn(0f, 1f),
-                                y = (change.position.y / size.height).coerceIn(0f, 1f)
-                            )
-                        )
-
-                        change.consume()
-                    }
+                .graphicsLayer {
+                    transformOrigin = TransformOrigin.Center
+                    rotationX = tiltX
+                    rotationY = tiltY
+                    cameraDistance = size.height * 2f
                 }
         ) {
 
@@ -85,7 +85,6 @@ fun TouchPad(
                 color = OutlineColor,
                 style = Stroke(strokeWidth)
             )
-
 
             drawCircle(
                 color = Color(0xFFFF4D4D),

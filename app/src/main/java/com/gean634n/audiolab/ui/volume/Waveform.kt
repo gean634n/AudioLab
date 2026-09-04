@@ -11,7 +11,6 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.gean634n.audiolab.ui.theme.OutlineColor
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -23,9 +22,9 @@ import kotlin.math.sin
 
 @Composable
 fun Waveform(
+    modifier: Modifier = Modifier,
     levelDb: Float,
-    cycles: Float = 1f,
-    modifier: Modifier = Modifier
+    cycles: Float = 1f
 ) {
     val transition = rememberInfiniteTransition(label = "wave")
     val progress = ((levelDb - MIN_LEVEL_DB) / (MAX_LEVEL_DB - MIN_LEVEL_DB)).coerceIn(0f, 1f)

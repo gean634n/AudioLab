@@ -1,5 +1,8 @@
 package com.gean634n.audiolab.ui
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.rememberNavController
 import com.gean634n.audiolab.audio.AudioEngine
@@ -11,6 +14,9 @@ import com.gean634n.audiolab.ui.volume.VolumeScreen
 import androidx.compose.runtime.getValue
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.runtime.LaunchedEffect
+import com.gean634n.audiolab.ui.waveforms.WaveformsScreen
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
 
 @Composable
 fun AudioLabApp(
@@ -27,31 +33,44 @@ fun AudioLabApp(
         }
     }
 
-    NavHost(
-        navController = navController,
-        startDestination = "menu"
-    ) {
-        composable("menu") {
-            MenuScreen(
-                onOpenVolume = {
-                    navController.navigate("volume")
-                },
-                onOpenTouchPad = {
-                    navController.navigate("touchpad")
-                }
-            )
-        }
+    Scaffold(
+        contentWindowInsets = WindowInsets.safeDrawing
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = "menu",
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable("menu") {
+                MenuScreen(
+                    onOpenVolume = {
+                        navController.navigate("volume")
+                    },
+                    onOpenTouchPad = {
+                        navController.navigate("touchpad")
+                    },
+                    onOpenWaveforms = {
+                        navController.navigate("waveforms")
+                    }
+                )
+            }
 
-        composable("volume") {
-            VolumeScreen(
-                audioEngine = audioEngine,
-            )
-        }
+            composable("volume") {
+                VolumeScreen(
+                    audioEngine = audioEngine,
+                )
+            }
 
-        composable("touchpad") {
-            TouchPadScreen(
-                audioEngine = audioEngine,
-            )
+            composable("touchpad") {
+                TouchPadScreen(
+                    audioEngine = audioEngine,
+                )
+            }
+
+            composable("waveforms") {
+                WaveformsScreen()
+            }
         }
     }
+
 }

@@ -53,7 +53,7 @@ fun TouchPadThumbnail(
         )
 
         drawCircle(
-            color = Color(0xFFFF4D4D),
+            color = OutlineColor,
             radius = ballRadius,
             center = ballCenter,
             style = Stroke(width = strokeWidth)

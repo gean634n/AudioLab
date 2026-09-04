@@ -20,7 +20,7 @@ private data class MenuItem(
 fun MenuScreen(
     onOpenVolume: () -> Unit,
     onOpenTouchPad: () -> Unit,
-    onOpenWaveforms: () -> Unit,
+    onOpenOscillators: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val items = listOf(
@@ -39,8 +39,8 @@ fun MenuScreen(
             }
         ),
         MenuItem(
-            title = "Waveforms",
-            onClick = onOpenWaveforms,
+            title = "Osciladores",
+            onClick = onOpenOscillators,
             preview = {}
         )
     )

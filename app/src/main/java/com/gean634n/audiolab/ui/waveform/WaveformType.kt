@@ -1,4 +1,4 @@
-package com.gean634n.audiolab.ui.waveforms
+package com.gean634n.audiolab.ui.waveform
 
 enum class WaveformType {
     SQUARE,

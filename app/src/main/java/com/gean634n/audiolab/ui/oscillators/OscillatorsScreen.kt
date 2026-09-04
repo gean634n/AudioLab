@@ -1,4 +1,4 @@
-package com.gean634n.audiolab.ui.waveforms
+package com.gean634n.audiolab.ui.oscillators
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -10,9 +10,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.gean634n.audiolab.ui.waveform.WaveformType
 
 @Composable
-fun WaveformsScreen(
+fun OscillatorScreen(
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -21,7 +22,7 @@ fun WaveformsScreen(
             .padding(20.dp, 5.dp),
         horizontalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        WaveformColumn(
+        OscillatorColumn(
             backgroundColor = Color(0xFFA8D8A8),
             waveformType = WaveformType.SQUARE,
             modifier = Modifier
@@ -29,7 +30,7 @@ fun WaveformsScreen(
                 .fillMaxHeight(),
         )
 
-        WaveformColumn(
+        OscillatorColumn(
             backgroundColor = Color(0xFFFFE89A),
             waveformType = WaveformType.TRIANGLE,
             modifier = Modifier
@@ -37,7 +38,7 @@ fun WaveformsScreen(
                 .fillMaxHeight(),
         )
 
-        WaveformColumn(
+        OscillatorColumn(
             backgroundColor = Color(0xFFFFB3C1),
             waveformType = WaveformType.SAWTOOTH,
             modifier = Modifier
@@ -45,7 +46,7 @@ fun WaveformsScreen(
                 .fillMaxHeight(),
         )
 
-        WaveformColumn(
+        OscillatorColumn(
             backgroundColor = Color(0xFFA5D8FF),
             waveformType = WaveformType.SINE,
             modifier = Modifier
@@ -57,6 +58,6 @@ fun WaveformsScreen(
 
 @Preview(showBackground = true)
 @Composable
-fun WaveformsScreenPreview() {
-    WaveformsScreen()
+fun OscillatorScreenPreview() {
+    OscillatorScreen()
 }

@@ -14,7 +14,7 @@ import com.gean634n.audiolab.ui.volume.VolumeScreen
 import androidx.compose.runtime.getValue
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.compose.runtime.LaunchedEffect
-import com.gean634n.audiolab.ui.waveforms.WaveformsScreen
+import com.gean634n.audiolab.ui.oscillators.OscillatorScreen
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
 
@@ -49,8 +49,8 @@ fun AudioLabApp(
                     onOpenTouchPad = {
                         navController.navigate("touchpad")
                     },
-                    onOpenWaveforms = {
-                        navController.navigate("waveforms")
+                    onOpenOscillators = {
+                        navController.navigate("oscillators")
                     }
                 )
             }
@@ -67,8 +67,8 @@ fun AudioLabApp(
                 )
             }
 
-            composable("waveforms") {
-                WaveformsScreen()
+            composable("oscillators") {
+                OscillatorScreen()
             }
         }
     }

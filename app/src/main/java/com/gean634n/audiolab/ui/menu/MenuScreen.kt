@@ -1,11 +1,8 @@
 package com.gean634n.audiolab.ui.menu
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -37,11 +34,7 @@ fun MenuScreen(
             title = "TouchPad",
             onClick = onOpenTouchPad,
             preview = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(1.6f)
-                )
+               TouchPadThumbnail()
             }
         )
     )

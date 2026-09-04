@@ -4,6 +4,9 @@ import androidx.compose.ui.graphics.Path
 import kotlin.math.PI
 import kotlin.math.sin
 
+// Each point describes one cycle using normalized coordinates:
+// x: 0 = left, 1 = right
+// y: -1 = top, 0 = center, 1 = bottom
 private fun buildLinearWavePath(
     width: Float,
     centerY: Float,

@@ -4,6 +4,37 @@ import androidx.compose.ui.graphics.Path
 import kotlin.math.PI
 import kotlin.math.sin
 
+private fun buildLinearWavePath(
+    width: Float,
+    centerY: Float,
+    amplitude: Float,
+    cycles: Int,
+    points: List<Pair<Float, Float>>
+): Path {
+    val path = Path()
+    val cycleWidth = width / cycles
+
+    for (cycle in 0 until cycles) {
+        val cycleStartX = cycle * cycleWidth
+
+        for ((index, point) in points.withIndex()) {
+            val normalizedX = point.first
+            val normalizedY = point.second
+
+            val x = cycleStartX + normalizedX * cycleWidth
+            val y = centerY + normalizedY * amplitude
+
+            if (cycle == 0 && index == 0) {
+                path.moveTo(x, y)
+            } else {
+                path.lineTo(x, y)
+            }
+        }
+    }
+
+    return path
+}
+
 fun buildSinePath(
     width: Float,
     centerY: Float,
@@ -34,26 +65,20 @@ fun buildSquarePath(
     amplitude: Float,
     cycles: Int
 ): Path {
-    val path = Path()
-    val cycleWidth = width / cycles
+    val points = listOf(
+        0f to -1f,
+        0.5f to -1f,
+        0.5f to 1f,
+        1f to 1f
+    )
 
-    path.moveTo(0f, centerY - amplitude)
-
-    for (i in 0 until cycles) {
-        val xStart = i * cycleWidth
-        val xMiddle = xStart + cycleWidth / 2f
-        val xEnd = xStart + cycleWidth
-
-        path.lineTo(xMiddle, centerY - amplitude)
-        path.lineTo(xMiddle, centerY + amplitude)
-        path.lineTo(xEnd, centerY + amplitude)
-
-        if (i < cycles - 1) {
-            path.lineTo(xEnd, centerY - amplitude)
-        }
-    }
-
-    return path
+    return buildLinearWavePath(
+        width = width,
+        centerY = centerY,
+        amplitude = amplitude,
+        cycles = cycles,
+        points = points
+    )
 }
 
 fun buildTrianglePath(
@@ -62,23 +87,20 @@ fun buildTrianglePath(
     amplitude: Float,
     cycles: Int
 ): Path {
-    val path = Path()
-    val cycleWidth = width / cycles
+    val points = listOf(
+        0f to 0f,
+        0.25f to -1f,
+        0.75f to 1f,
+        1f to 0f
+    )
 
-    path.moveTo(0f, centerY)
-
-    for (i in 0 until cycles) {
-        val xStart = i * cycleWidth
-        val xQuarter = xStart + cycleWidth * 0.25f
-        val xThreeQuarter = xStart + cycleWidth * 0.75f
-        val xEnd = xStart + cycleWidth
-
-        path.lineTo(xQuarter, centerY - amplitude)
-        path.lineTo(xThreeQuarter, centerY + amplitude)
-        path.lineTo(xEnd, centerY)
-    }
-
-    return path
+    return buildLinearWavePath(
+        width = width,
+        centerY = centerY,
+        amplitude = amplitude,
+        cycles = cycles,
+        points = points
+    )
 }
 
 fun buildSawtoothPath(
@@ -87,20 +109,16 @@ fun buildSawtoothPath(
     amplitude: Float,
     cycles: Int
 ): Path {
-    val path = Path()
-    val cycleWidth = width / cycles
+    val points = listOf(
+        0f to 1f,
+        1f to -1f
+    )
 
-    path.moveTo(0f, centerY + amplitude)
-
-    for (i in 0 until cycles) {
-        val xEnd = (i + 1) * cycleWidth
-
-        path.lineTo(xEnd, centerY - amplitude)
-
-        if (i < cycles - 1) {
-            path.lineTo(xEnd, centerY + amplitude)
-        }
-    }
-
-    return path
+    return buildLinearWavePath(
+        width = width,
+        centerY = centerY,
+        amplitude = amplitude,
+        cycles = cycles,
+        points = points
+    )
 }

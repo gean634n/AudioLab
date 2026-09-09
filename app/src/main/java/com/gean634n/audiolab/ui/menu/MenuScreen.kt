@@ -41,7 +41,9 @@ fun MenuScreen(
         MenuItem(
             title = "Osciladores",
             onClick = onOpenOscillators,
-            preview = {}
+            preview = {
+                OscillatorsThumbnail()
+            }
         )
     )
 

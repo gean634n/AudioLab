@@ -12,13 +12,16 @@ private fun buildLinearWavePath(
     centerY: Float,
     amplitude: Float,
     cycles: Int,
-    points: List<Pair<Float, Float>>
+    points: List<Pair<Float, Float>>,
+    phase: Float = 0f
 ): Path {
     val path = Path()
     val cycleWidth = width / cycles
 
-    for (cycle in 0 until cycles) {
-        val cycleStartX = cycle * cycleWidth
+    val horizontalOffset = (phase / (2f * PI.toFloat())) * cycleWidth
+
+    for (cycle in -1..cycles) {
+        val cycleStartX = cycle * cycleWidth - horizontalOffset
 
         for ((index, point) in points.withIndex()) {
             val normalizedX = point.first
@@ -27,7 +30,7 @@ private fun buildLinearWavePath(
             val x = cycleStartX + normalizedX * cycleWidth
             val y = centerY + normalizedY * amplitude
 
-            if (cycle == 0 && index == 0) {
+            if (cycle == -1 && index == 0) {
                 path.moveTo(x, y)
             } else {
                 path.lineTo(x, y)
@@ -66,7 +69,8 @@ fun buildSquarePath(
     width: Float,
     centerY: Float,
     amplitude: Float,
-    cycles: Int
+    cycles: Int,
+    phase: Float = 0f
 ): Path {
     val points = listOf(
         0f to -1f,
@@ -80,7 +84,8 @@ fun buildSquarePath(
         centerY = centerY,
         amplitude = amplitude,
         cycles = cycles,
-        points = points
+        points = points,
+        phase = phase
     )
 }
 
@@ -88,7 +93,8 @@ fun buildTrianglePath(
     width: Float,
     centerY: Float,
     amplitude: Float,
-    cycles: Int
+    cycles: Int,
+    phase: Float = 0f
 ): Path {
     val points = listOf(
         0f to 0f,
@@ -102,7 +108,8 @@ fun buildTrianglePath(
         centerY = centerY,
         amplitude = amplitude,
         cycles = cycles,
-        points = points
+        points = points,
+        phase = phase
     )
 }
 
@@ -110,7 +117,8 @@ fun buildSawtoothPath(
     width: Float,
     centerY: Float,
     amplitude: Float,
-    cycles: Int
+    cycles: Int,
+    phase: Float = 0f
 ): Path {
     val points = listOf(
         0f to 1f,
@@ -122,6 +130,7 @@ fun buildSawtoothPath(
         centerY = centerY,
         amplitude = amplitude,
         cycles = cycles,
-        points = points
+        points = points,
+        phase = phase
     )
 }

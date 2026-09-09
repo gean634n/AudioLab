@@ -10,11 +10,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gean634n.audiolab.ui.waveform.WaveformType
 
 @Composable
 fun OscillatorScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: OscillatorsViewModel = viewModel()
 ) {
     Row(
         modifier = modifier
@@ -25,6 +27,13 @@ fun OscillatorScreen(
         OscillatorColumn(
             backgroundColor = Color(0xFFA8D8A8),
             waveformType = WaveformType.SQUARE,
+            isActive = viewModel.activeOscillator == WaveformType.SQUARE,
+            onPress = {
+                viewModel.onOscillatorPressed(WaveformType.SQUARE)
+            },
+            onRelease = {
+                viewModel.onOscillatorReleased()
+            },
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight(),
@@ -33,6 +42,13 @@ fun OscillatorScreen(
         OscillatorColumn(
             backgroundColor = Color(0xFFFFE89A),
             waveformType = WaveformType.TRIANGLE,
+            isActive = viewModel.activeOscillator == WaveformType.TRIANGLE,
+            onPress = {
+                viewModel.onOscillatorPressed(WaveformType.TRIANGLE)
+            },
+            onRelease = {
+                viewModel.onOscillatorReleased()
+            },
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight(),
@@ -41,6 +57,13 @@ fun OscillatorScreen(
         OscillatorColumn(
             backgroundColor = Color(0xFFFFB3C1),
             waveformType = WaveformType.SAWTOOTH,
+            isActive = viewModel.activeOscillator == WaveformType.SAWTOOTH,
+            onPress = {
+                viewModel.onOscillatorPressed(WaveformType.SAWTOOTH)
+            },
+            onRelease = {
+                viewModel.onOscillatorReleased()
+            },
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight(),
@@ -49,6 +72,13 @@ fun OscillatorScreen(
         OscillatorColumn(
             backgroundColor = Color(0xFFA5D8FF),
             waveformType = WaveformType.SINE,
+            isActive = viewModel.activeOscillator == WaveformType.SINE,
+            onPress = {
+                viewModel.onOscillatorPressed(WaveformType.SINE)
+            },
+            onRelease = {
+                viewModel.onOscillatorReleased()
+            },
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight(),

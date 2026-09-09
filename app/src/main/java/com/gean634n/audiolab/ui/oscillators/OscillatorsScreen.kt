@@ -34,6 +34,10 @@ fun OscillatorScreen(
             onRelease = {
                 viewModel.onOscillatorReleased()
             },
+            onPositionChange = { y ->
+                viewModel.onPositionChange(y)
+            },
+            frequencyHz = viewModel.frequencyHz,
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight(),
@@ -49,6 +53,10 @@ fun OscillatorScreen(
             onRelease = {
                 viewModel.onOscillatorReleased()
             },
+            onPositionChange = { y ->
+                viewModel.onPositionChange(y)
+            },
+            frequencyHz = viewModel.frequencyHz,
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight(),
@@ -64,6 +72,10 @@ fun OscillatorScreen(
             onRelease = {
                 viewModel.onOscillatorReleased()
             },
+            onPositionChange = { y ->
+                viewModel.onPositionChange(y)
+            },
+            frequencyHz = viewModel.frequencyHz,
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight(),
@@ -79,6 +91,10 @@ fun OscillatorScreen(
             onRelease = {
                 viewModel.onOscillatorReleased()
             },
+            onPositionChange = { y ->
+                viewModel.onPositionChange(y)
+            },
+            frequencyHz = viewModel.frequencyHz,
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight(),

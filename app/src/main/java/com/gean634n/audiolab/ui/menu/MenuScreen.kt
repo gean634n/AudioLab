@@ -21,6 +21,7 @@ fun MenuScreen(
     onOpenVolume: () -> Unit,
     onOpenTouchPad: () -> Unit,
     onOpenOscillators: () -> Unit,
+    onOpenDrawing: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val items = listOf(
@@ -44,7 +45,13 @@ fun MenuScreen(
             preview = {
                 OscillatorsThumbnail()
             }
+        ),
+        MenuItem(
+            title = "Drawing",
+            onClick = onOpenDrawing,
+            preview = {}
         )
+
     )
 
     LazyVerticalGrid(

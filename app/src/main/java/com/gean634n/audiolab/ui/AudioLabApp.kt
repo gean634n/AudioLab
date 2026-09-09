@@ -17,6 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import com.gean634n.audiolab.ui.oscillators.OscillatorScreen
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
+import com.gean634n.audiolab.ui.drawing.DrawingScreen
 
 @Composable
 fun AudioLabApp(
@@ -51,6 +52,9 @@ fun AudioLabApp(
                     },
                     onOpenOscillators = {
                         navController.navigate("oscillators")
+                    },
+                    onOpenDrawing = {
+                        navController.navigate("drawing")
                     }
                 )
             }
@@ -71,6 +75,10 @@ fun AudioLabApp(
                 OscillatorScreen(
                     audioEngine = audioEngine,
                 )
+            }
+
+            composable("drawing") {
+                DrawingScreen()
             }
         }
     }

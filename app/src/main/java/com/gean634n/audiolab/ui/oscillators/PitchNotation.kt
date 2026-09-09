@@ -1,12 +1,16 @@
 package com.gean634n.audiolab.ui.oscillators
 
 import kotlin.math.ln
+import kotlin.math.pow
 import kotlin.math.roundToInt
 
 data class PitchNotation(
     val note: String,
     val cents: Int
 )
+
+private const val MIN_FREQUENCY_HZ = 55f
+private const val MAX_FREQUENCY_HZ = 880f
 
 fun frequencyToPitchNotation(frequencyHz: Float): PitchNotation {
     val midi =
@@ -31,4 +35,11 @@ fun frequencyToPitchNotation(frequencyHz: Float): PitchNotation {
         note = note,
         cents = cents
     )
+}
+
+internal fun yToFrequency(y: Float): Float {
+    val normalizedY = 1f - y
+
+    return MIN_FREQUENCY_HZ *
+            (MAX_FREQUENCY_HZ / MIN_FREQUENCY_HZ).pow(normalizedY)
 }

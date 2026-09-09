@@ -1,10 +1,5 @@
 package com.gean634n.audiolab.ui.oscillators
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -14,7 +9,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,6 +31,7 @@ import com.gean634n.audiolab.ui.waveform.buildSinePath
 import com.gean634n.audiolab.ui.waveform.buildSquarePath
 import com.gean634n.audiolab.ui.waveform.buildTrianglePath
 import kotlin.math.PI
+import kotlin.math.ln
 
 @Composable
 fun OscillatorColumn(
@@ -44,36 +46,55 @@ fun OscillatorColumn(
     cycles: Int = 2
 ) {
 
-    val transition = rememberInfiniteTransition(label = "oscillator")
-
-    val phase by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = (2f * PI).toFloat(),
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = 1500,
-                easing = LinearEasing
-            )
-        ),
-        label = "phase"
-    )
-
     val pitchNotation = frequencyToPitchNotation(frequencyHz)
+
+    var phase by remember { mutableFloatStateOf(0f) }
+
+    var visualFrequencyHz by remember { mutableFloatStateOf(frequencyHz) }
+
+    val currentFrequencyHz by rememberUpdatedState(visualFrequencyHz)
+
+    LaunchedEffect(isActive) {
+        if (!isActive) {
+            phase = 0f
+            return@LaunchedEffect
+        }
+
+        var previousFrameTime = 0L
+
+        while (true) {
+            withFrameNanos { frameTime ->
+                if (previousFrameTime != 0L) {
+                    val deltaSeconds = (frameTime - previousFrameTime) / 1_000_000_000f
+
+                    val visualSpeed = frequencyToMotionRate(currentFrequencyHz)
+
+                    val angularVelocity = 2f * PI.toFloat() * visualSpeed
+
+                    phase += angularVelocity * deltaSeconds
+                    phase %= (2f * PI.toFloat())
+                }
+
+                previousFrameTime = frameTime
+            }
+        }
+    }
 
     Box(
         modifier = modifier.fillMaxSize()
     ) {
         Canvas(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .pointerInput(Unit) {
                     awaitEachGesture {
                         val down = awaitFirstDown()
 
                         onPress()
-                        onPositionChange(
-                            (down.position.y / size.height).coerceIn(0f, 1f)
-                        )
+
+                        val normalizedY = (down.position.y / size.height).coerceIn(0f, 1f)
+                        visualFrequencyHz = yToFrequency(normalizedY)
+                        onPositionChange(normalizedY)
 
                         var change = down
 
@@ -82,9 +103,9 @@ fun OscillatorColumn(
                             change = event.changes.first()
 
                             if (change.pressed) {
-                                onPositionChange(
-                                    (change.position.y / size.height).coerceIn(0f, 1f)
-                                )
+                                val normalizedY = (change.position.y / size.height).coerceIn(0f, 1f)
+                                visualFrequencyHz = yToFrequency(normalizedY)
+                                onPositionChange(normalizedY)
                             }
                         }
 
@@ -103,8 +124,6 @@ fun OscillatorColumn(
 
             val centerY = size.height / 2f
             val amplitude = size.height * 0.25f
-            // val cycles = 2
-            // val cycleWidth = size.width / cycles
             var path: Path
 
             when (waveformType) {
@@ -181,4 +200,21 @@ fun OscillatorColumn(
         }
     }
 
+}
+
+private fun frequencyToMotionRate(frequencyHz: Float): Float {
+    val minFrequency = 55f
+    val maxFrequency = 880f
+
+    val bottomRate = 0.55f
+    val topRate = 8.8f
+
+    val normalized =
+        (
+                ln(frequencyHz / minFrequency) /
+                        ln(maxFrequency / minFrequency)
+                ).coerceIn(0f, 1f)
+
+    return bottomRate +
+            normalized * (topRate - bottomRate)
 }

@@ -11,12 +11,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.gean634n.audiolab.audio.AudioEngine
 import com.gean634n.audiolab.ui.waveform.WaveformType
 
 @Composable
 fun OscillatorScreen(
+    audioEngine: AudioEngine,
     modifier: Modifier = Modifier,
-    viewModel: OscillatorsViewModel = viewModel()
+    viewModel: OscillatorsViewModel = viewModel(
+        factory = OscillatorsViewModelFactory(audioEngine)
+    )
 ) {
     Row(
         modifier = modifier
@@ -102,8 +106,8 @@ fun OscillatorScreen(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun OscillatorScreenPreview() {
-    OscillatorScreen()
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun OscillatorScreenPreview() {
+//    OscillatorScreen()
+//}

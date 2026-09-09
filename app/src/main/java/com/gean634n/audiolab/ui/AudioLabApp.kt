@@ -68,7 +68,9 @@ fun AudioLabApp(
             }
 
             composable("oscillators") {
-                OscillatorScreen()
+                OscillatorScreen(
+                    audioEngine = audioEngine,
+                )
             }
         }
     }

@@ -34,6 +34,28 @@ fun DrawingScreen(
             modifier = Modifier.fillMaxSize()
         )
 
+        viewModel.lastStrokeMetrics?.let { metrics ->
+            Text(
+                text = """
+            Tool: ${viewModel.state.selectedTool}
+            Linha: ${viewModel.state.selectedLineStyle}
+            Cor: ${viewModel.state.selectedColor}
+            Duração: ${metrics.durationMillis} ms
+            Velocidade: %.2f
+            X médio: %.2f
+            Y médio: %.2f
+            Direção: ${metrics.direction}
+        """.trimIndent().format(
+                    metrics.averageSpeed,
+                    metrics.averageX,
+                    metrics.averageY
+                ),
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(16.dp)
+            )
+        }
+
         Row(
             modifier = Modifier
                 .align(Alignment.TopEnd)

@@ -8,10 +8,15 @@ import com.gean634n.audiolab.drawing.DrawingColor
 import com.gean634n.audiolab.drawing.DrawingTool
 import com.gean634n.audiolab.drawing.LineStyle
 import com.gean634n.audiolab.drawing.Stroke
+import com.gean634n.audiolab.drawing.StrokeMetrics
+import com.gean634n.audiolab.drawing.calculateMetrics
 
 class DrawingViewModel : ViewModel() {
 
     var state by mutableStateOf(DrawingState())
+        private set
+
+    var lastStrokeMetrics by mutableStateOf<StrokeMetrics?>(null)
         private set
 
     val canUndo: Boolean
@@ -21,6 +26,8 @@ class DrawingViewModel : ViewModel() {
         get() = state.undoneStrokes.isNotEmpty()
 
     fun addStroke(stroke: Stroke) {
+        lastStrokeMetrics = stroke.calculateMetrics()
+
         state = state.copy(
             strokes = state.strokes + stroke,
             undoneStrokes = emptyList()

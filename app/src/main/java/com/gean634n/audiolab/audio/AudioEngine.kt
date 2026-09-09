@@ -6,11 +6,11 @@ import org.puredata.core.PdBase
 import java.io.File
 import kotlin.math.pow
 import android.media.AudioManager
+import com.gean634n.audiolab.ui.waveform.WaveformType
 
 class AudioEngine (
     private val context: Context
 ) {
-
     fun start() {
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
@@ -60,6 +60,17 @@ class AudioEngine (
 
     fun setFrequencyHz(hz: Float) {
         PdBase.sendFloat("frequency", hz)
+    }
+
+    fun setWaveform(type: WaveformType) {
+        val value = when (type) {
+            WaveformType.SINE -> 0f
+            WaveformType.SAWTOOTH -> 1f
+            WaveformType.SQUARE -> 2f
+            WaveformType.TRIANGLE -> 3f
+        }
+
+        PdBase.sendFloat("waveform", value)
     }
 }
 

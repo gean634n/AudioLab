@@ -22,6 +22,7 @@ class OscillatorsViewModel(
     fun onOscillatorPressed(type: WaveformType) {
         activeOscillator = type
 
+        audioEngine.setWaveform(type)
         audioEngine.setFrequencyHz(frequencyHz)
         audioEngine.setLevelDb(0f)
     }

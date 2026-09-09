@@ -7,21 +7,64 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
 import com.gean634n.audiolab.drawing.DrawingColor
 import com.gean634n.audiolab.drawing.DrawingTool
 import com.gean634n.audiolab.drawing.LineStyle
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 
 @Composable
 fun DrawingScreen(
     modifier: Modifier = Modifier,
     viewModel: DrawingViewModel = viewModel()
 ) {
+    val playingStrokeIndex = viewModel.state.playingStrokeIndex
+    var playbackPointCount by remember { mutableIntStateOf(0) }
+
+    val isPaused = viewModel.state.isPaused
+
+    LaunchedEffect(
+        playingStrokeIndex,
+        isPaused
+    ) {
+        if (playingStrokeIndex == null) {
+            playbackPointCount = 0
+            return@LaunchedEffect
+        }
+
+        if (isPaused) {
+            return@LaunchedEffect
+        }
+
+        val stroke = viewModel.state.strokes[playingStrokeIndex]
+        val points = stroke.points
+
+        if (playbackPointCount == 0 && points.isNotEmpty()) {
+            playbackPointCount = 1
+        }
+
+        for (i in playbackPointCount until points.size) {
+            val delayMillis =
+                points[i].timeMillis - points[i - 1].timeMillis
+
+            delay(delayMillis.coerceAtLeast(0L))
+
+            playbackPointCount = i + 1
+        }
+
+        viewModel.playNextStroke()
+    }
+
     Box(
         modifier = modifier.fillMaxSize()
     ) {
@@ -31,8 +74,52 @@ fun DrawingScreen(
             selectedTool = viewModel.state.selectedTool,
             selectedLineStyle = viewModel.state.selectedLineStyle,
             selectedColor = viewModel.state.selectedColor,
+            playingStrokeIndex = viewModel.state.playingStrokeIndex,
+            playbackPointCount = playbackPointCount,
             modifier = Modifier.fillMaxSize()
         )
+
+        Row(
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(
+                onClick = {
+                    if (viewModel.state.isPaused) {
+                        viewModel.resume()
+                    } else {
+                        viewModel.play()
+                    }
+                },
+                enabled = viewModel.state.strokes.isNotEmpty()
+            ) {
+                Text(
+                    if (viewModel.state.isPaused) {
+                        "Continuar"
+                    } else {
+                        "Play"
+                    }
+                )
+            }
+
+            Button(
+                onClick = { viewModel.pause() },
+                enabled =
+                    viewModel.state.playingStrokeIndex != null &&
+                            !viewModel.state.isPaused
+            ) {
+                Text("Pause")
+            }
+
+            Button(
+                onClick = { viewModel.stop() },
+                enabled = viewModel.state.playingStrokeIndex != null
+            ) {
+                Text("Stop")
+            }
+        }
 
         viewModel.lastStrokeMetrics?.let { metrics ->
             Text(
@@ -51,7 +138,7 @@ fun DrawingScreen(
                     metrics.averageY
                 ),
                 modifier = Modifier
-                    .align(Alignment.TopStart)
+                    .align(Alignment.BottomEnd)
                     .padding(16.dp)
             )
         }

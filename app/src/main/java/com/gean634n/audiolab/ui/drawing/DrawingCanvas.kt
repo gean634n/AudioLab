@@ -1,5 +1,6 @@
 package com.gean634n.audiolab.ui.drawing
 
+import android.os.SystemClock
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -28,6 +29,8 @@ fun DrawingCanvas(
     selectedTool: DrawingTool,
     selectedLineStyle: LineStyle,
     selectedColor: DrawingColor,
+    playingStrokeIndex: Int?,
+    playbackPointCount: Int,
     onStrokeFinished: (Stroke) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -60,8 +63,9 @@ fun DrawingCanvas(
                         val point = StrokePoint(
                             x = normalizedX,
                             y = normalizedY,
-                            timeMillis = System.currentTimeMillis()
+                            timeMillis = SystemClock.uptimeMillis()
                         )
+
 
                         points += point
 
@@ -163,9 +167,21 @@ fun DrawingCanvas(
         }
 
         // Traços já concluídos.
-        strokes.forEach { stroke ->
+        strokes.forEachIndexed { index, stroke ->
+            val pointsToDraw =
+                if (index == playingStrokeIndex) {
+                    stroke.points.take(
+                        playbackPointCount.coerceIn(
+                            0,
+                            stroke.points.size
+                        )
+                    )
+                } else {
+                    stroke.points
+                }
+
             drawPoints(
-                points = stroke.points,
+                points = pointsToDraw,
                 tool = stroke.tool,
                 lineStyle = stroke.lineStyle,
                 drawingColor = stroke.color

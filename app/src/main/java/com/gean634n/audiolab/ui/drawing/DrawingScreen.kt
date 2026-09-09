@@ -85,7 +85,12 @@ fun DrawingScreen(
                 .padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Button(
+            SketchButton(
+                text = if (viewModel.state.isPaused) {
+                    "Continuar"
+                } else {
+                    "Play"
+                },
                 onClick = {
                     if (viewModel.state.isPaused) {
                         viewModel.resume()
@@ -94,31 +99,21 @@ fun DrawingScreen(
                     }
                 },
                 enabled = viewModel.state.strokes.isNotEmpty()
-            ) {
-                Text(
-                    if (viewModel.state.isPaused) {
-                        "Continuar"
-                    } else {
-                        "Play"
-                    }
-                )
-            }
+            )
 
-            Button(
-                onClick = { viewModel.pause() },
+            SketchButton(
+                text = "Pause",
+                onClick = viewModel::pause,
                 enabled =
                     viewModel.state.playingStrokeIndex != null &&
                             !viewModel.state.isPaused
-            ) {
-                Text("Pause")
-            }
+            )
 
-            Button(
-                onClick = { viewModel.stop() },
+            SketchButton(
+                text = "Stop",
+                onClick = viewModel::stop,
                 enabled = viewModel.state.playingStrokeIndex != null
-            ) {
-                Text("Stop")
-            }
+            )
         }
 
         viewModel.lastStrokeMetrics?.let { metrics ->

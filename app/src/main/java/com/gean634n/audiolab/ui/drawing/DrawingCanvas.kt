@@ -22,6 +22,7 @@ import com.gean634n.audiolab.drawing.DrawingTool
 import com.gean634n.audiolab.drawing.Stroke
 import com.gean634n.audiolab.drawing.StrokePoint
 import com.gean634n.audiolab.drawing.LineStyle
+import com.gean634n.audiolab.drawing.PlaybackAnimationMode
 
 @Composable
 fun DrawingCanvas(
@@ -29,8 +30,10 @@ fun DrawingCanvas(
     selectedTool: DrawingTool,
     selectedLineStyle: LineStyle,
     selectedColor: DrawingColor,
-    playingStrokeIndex: Int?,
-    playbackPointCount: Int,
+    playheadX: Float,
+    playbackElapsedMillis: Long,
+    playbackAnimationMode: PlaybackAnimationMode,
+    isPlaying: Boolean,
     onStrokeFinished: (Stroke) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -52,23 +55,16 @@ fun DrawingCanvas(
                     val points = mutableListOf<StrokePoint>()
 
                     fun addPoint(position: Offset) {
-                        val normalizedX =
-                            (position.x / size.width)
-                                .coerceIn(0f, 1f)
+                        val normalizedX = (position.x / size.width).coerceIn(0f, 1f)
 
-                        val normalizedY =
-                            (position.y / size.height)
-                                .coerceIn(0f, 1f)
+                        val normalizedY = (position.y / size.height).coerceIn(0f, 1f)
 
                         val point = StrokePoint(
                             x = normalizedX,
                             y = normalizedY,
                             timeMillis = SystemClock.uptimeMillis()
                         )
-
-
                         points += point
-
                         currentPoints = points.toList()
                     }
 
@@ -167,17 +163,82 @@ fun DrawingCanvas(
         }
 
         // Traços já concluídos.
-        strokes.forEachIndexed { index, stroke ->
+        strokes.forEach { stroke ->
+            val firstPoint = stroke.points.firstOrNull()
+                ?: return@forEach
+
+            val startX = firstPoint.x
+
+            val triggerTimeMillis =
+                (startX / 0.002f * 16f).toLong()
+
+            val strokeElapsedMillis =
+                (playbackElapsedMillis - triggerTimeMillis)
+                    .coerceAtLeast(0L)
+
+            val blinkDurationMillis = 120L
+
             val pointsToDraw =
-                if (index == playingStrokeIndex) {
-                    stroke.points.take(
-                        playbackPointCount.coerceIn(
-                            0,
-                            stroke.points.size
-                        )
-                    )
-                } else {
+                if (!isPlaying) {
                     stroke.points
+                } else {
+                    when (playbackAnimationMode) {
+                        PlaybackAnimationMode.HIDE_ALL_SHOW_FULL -> {
+                            if (playheadX < startX) {
+                                emptyList()
+                            } else {
+                                stroke.points
+                            }
+                        }
+
+                        PlaybackAnimationMode.HIDE_ALL_REPLAY_TIMING -> {
+                            if (playheadX < startX) {
+                                emptyList()
+                            } else {
+                                stroke.points.takeWhile { point ->
+                                    val pointElapsedMillis =
+                                        point.timeMillis - firstPoint.timeMillis
+
+                                    pointElapsedMillis <= strokeElapsedMillis
+                                }
+                            }
+                        }
+
+                        PlaybackAnimationMode.BLINK_FULL -> {
+                            when {
+                                playheadX < startX ->
+                                    stroke.points
+
+                                strokeElapsedMillis < blinkDurationMillis ->
+                                    emptyList()
+
+                                else ->
+                                    stroke.points
+                            }
+                        }
+
+                        PlaybackAnimationMode.BLINK_REPLAY_TIMING -> {
+                            when {
+                                playheadX < startX ->
+                                    stroke.points
+
+                                strokeElapsedMillis < blinkDurationMillis ->
+                                    emptyList()
+
+                                else -> {
+                                    val replayElapsedMillis =
+                                        strokeElapsedMillis - blinkDurationMillis
+
+                                    stroke.points.takeWhile { point ->
+                                        val pointElapsedMillis =
+                                            point.timeMillis - firstPoint.timeMillis
+
+                                        pointElapsedMillis <= replayElapsedMillis
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
             drawPoints(
@@ -195,5 +256,16 @@ fun DrawingCanvas(
             lineStyle = selectedLineStyle,
             drawingColor = selectedColor
         )
+
+        if (isPlaying) {
+            val x = playheadX * size.width
+
+            drawLine(
+                color = Color.Red,
+                start = Offset(x, 0f),
+                end = Offset(x, size.height),
+                strokeWidth = 3f
+            )
+        }
     }
 }

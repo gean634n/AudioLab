@@ -8,6 +8,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.gean634n.audiolab.audio.AudioEngine
+import com.gean634n.audiolab.ui.waveform.WaveformType
 import kotlin.math.pow
 
 private const val MIN_FREQUENCY_HZ = 110f
@@ -31,6 +32,7 @@ class TouchPadViewModel(
     init {
         audioEngine.setLevelDb(levelDb)
         audioEngine.setFrequencyHz(frequencyHz)
+        audioEngine.setWaveform(WaveformType.SINE)
     }
 
     fun onPositionChange(position: Offset) {

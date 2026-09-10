@@ -7,8 +7,6 @@ import androidx.core.view.WindowCompat
 import com.gean634n.audiolab.audio.AudioEngine
 import com.gean634n.audiolab.ui.AudioLabApp
 import com.gean634n.audiolab.ui.theme.AudioLabTheme
-import com.gean634n.audiolab.ui.touchpad.TouchPadScreen
-import com.gean634n.audiolab.ui.volume.VolumeScreen
 
 class MainActivity : ComponentActivity() {
 

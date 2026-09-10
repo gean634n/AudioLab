@@ -25,6 +25,11 @@ class DrawingViewModel : ViewModel() {
     val canRedo: Boolean
         get() = state.undoneStrokes.isNotEmpty()
 
+    val playbackStrokes: List<Stroke>
+        get() = state.strokes.sortedBy { stroke ->
+            stroke.points.firstOrNull()?.x ?: 0f
+        }
+
     fun addStroke(stroke: Stroke) {
         lastStrokeMetrics = stroke.calculateMetrics()
 
@@ -79,53 +84,34 @@ class DrawingViewModel : ViewModel() {
     }
 
     fun play() {
-        if (state.strokes.isEmpty()) {
-            return
-        }
+        if (state.strokes.isEmpty()) return
 
         state = state.copy(
-            playingStrokeIndex = 0,
+            isPlaying = true,
             isPaused = false
-        )
-    }
-
-    fun stop() {
-        state = state.copy(
-            playingStrokeIndex = null,
-            isPaused = false
-        )
-    }
-
-    fun playNextStroke() {
-        val currentIndex = state.playingStrokeIndex ?: return
-        val nextIndex = currentIndex + 1
-
-        state = state.copy(
-            playingStrokeIndex =
-                if (nextIndex < state.strokes.size) {
-                    nextIndex
-                } else {
-                    null
-                }
         )
     }
 
     fun pause() {
-        if (state.playingStrokeIndex == null) {
-            return
-        }
+        if (!state.isPlaying) return
 
         state = state.copy(
             isPaused = true
         )
     }
 
+
     fun resume() {
-        if (state.playingStrokeIndex == null) {
-            return
-        }
+        if (!state.isPlaying) return
 
         state = state.copy(
+            isPaused = false
+        )
+    }
+
+    fun stop() {
+        state = state.copy(
+            isPlaying = false,
             isPaused = false
         )
     }

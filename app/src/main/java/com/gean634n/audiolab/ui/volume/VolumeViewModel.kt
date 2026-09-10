@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.gean634n.audiolab.audio.AudioEngine
+import com.gean634n.audiolab.ui.waveform.WaveformType
 
 const val MIN_LEVEL_DB = -30f
 const val MAX_LEVEL_DB = 0f
@@ -17,6 +18,8 @@ class VolumeViewModel(
 
     init {
         audioEngine.setLevelDb(levelDb)
+        audioEngine.setFrequencyHz(440f)
+        audioEngine.setWaveform(WaveformType.SINE)
     }
 
     fun onLevelChange(value: Float) {

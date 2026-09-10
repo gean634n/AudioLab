@@ -26,7 +26,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -46,8 +48,19 @@ fun DrawingScreen(
     modifier: Modifier = Modifier,
     viewModel: DrawingViewModel = viewModel()
 ) {
-    val playingStrokeIndex = viewModel.state.playingStrokeIndex
+
+    val isPlaying = viewModel.state.isPlaying
     val isPaused = viewModel.state.isPaused
+
+    var playheadX by remember {
+        mutableFloatStateOf(0f)
+    }
+
+    var playbackElapsedMillis by remember {
+        mutableLongStateOf(0L)
+    }
+
+    val playbackStrokes = viewModel.playbackStrokes
 
     var playbackPointCount by remember {
         mutableIntStateOf(0)
@@ -57,39 +70,27 @@ fun DrawingScreen(
         mutableStateOf<Int?>(null)
     }
 
-    LaunchedEffect(playingStrokeIndex, isPaused) {
-        if (playingStrokeIndex == null) {
-            playbackPointCount = 0
-            playbackStrokeIndex = null
+    LaunchedEffect(isPlaying, isPaused) {
+        if (!isPlaying) {
+            playheadX = 0f
+            playbackElapsedMillis = 0L
             return@LaunchedEffect
-        }
-
-        if (playbackStrokeIndex != playingStrokeIndex) {
-            playbackPointCount = 0
-            playbackStrokeIndex = playingStrokeIndex
         }
 
         if (isPaused) {
             return@LaunchedEffect
         }
 
-        val stroke = viewModel.state.strokes[playingStrokeIndex]
-        val points = stroke.points
+        while (playheadX < 1f) {
+            delay(16L)
 
-        if (playbackPointCount == 0 && points.isNotEmpty()) {
-            playbackPointCount = 1
+            playbackElapsedMillis += 16L
+
+            playheadX = (playheadX + 0.002f)
+                .coerceAtMost(1f)
         }
 
-        for (i in playbackPointCount until points.size) {
-            val delayMillis =
-                points[i].timeMillis - points[i - 1].timeMillis
-
-            delay(delayMillis.coerceAtLeast(0L))
-
-            playbackPointCount = i + 1
-        }
-
-        viewModel.playNextStroke()
+        viewModel.stop()
     }
 
     Column(
@@ -124,10 +125,14 @@ fun DrawingScreen(
             ) {
                 SketchButton(
                     onClick = {
-                        if (viewModel.state.isPaused) viewModel.resume() else viewModel.play()
+                        if (isPaused) {
+                            viewModel.resume()
+                        } else {
+                            viewModel.play()
+                        }
                     },
                     backgroundColor = Color(0xFF6FCF97),
-                    enabled = viewModel.state.strokes.isNotEmpty() && (playingStrokeIndex == null || isPaused)
+                    enabled = viewModel.state.strokes.isNotEmpty() && (!isPlaying || isPaused)
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.PlayArrow,
@@ -139,7 +144,7 @@ fun DrawingScreen(
                 SketchButton(
                     onClick = viewModel::pause,
                     backgroundColor = Color(0xFFF2C94C),
-                    enabled = playingStrokeIndex != null && !isPaused
+                    enabled = isPlaying && !isPaused
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Pause,
@@ -151,7 +156,7 @@ fun DrawingScreen(
                 SketchButton(
                     onClick = viewModel::stop,
                     backgroundColor = Color(0xFFE85D5D),
-                    enabled = playingStrokeIndex != null
+                    enabled = isPlaying
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Stop,
@@ -238,13 +243,15 @@ fun DrawingScreen(
                     .background(Color.White)
             ) {
                 DrawingCanvas(
-                    strokes = viewModel.state.strokes,
-                    onStrokeFinished = viewModel::addStroke,
+                    strokes = playbackStrokes,
                     selectedTool = viewModel.state.selectedTool,
                     selectedLineStyle = viewModel.state.selectedLineStyle,
                     selectedColor = viewModel.state.selectedColor,
-                    playingStrokeIndex = viewModel.state.playingStrokeIndex,
-                    playbackPointCount = playbackPointCount,
+                    playheadX = playheadX,
+                    playbackElapsedMillis = playbackElapsedMillis,
+                    playbackAnimationMode = viewModel.state.playbackAnimationMode,
+                    isPlaying = isPlaying,
+                    onStrokeFinished = viewModel::addStroke,
                     modifier = Modifier.fillMaxSize()
                 )
 
@@ -258,11 +265,11 @@ fun DrawingScreen(
                                     color = Color.White.copy(alpha = 0.9f),
                                     // shape = RoundedCornerShape(8.dp)
                                 )
-                                .border(
-                                    width = 1.dp,
-                                    color = Color(0xFF1E1E1E),
-                                    // shape = RoundedCornerShape(8.dp)
-                                )
+                                // .border(
+                                //    width = 1.dp,
+                                //    color = Color(0xFF1E1E1E),
+                                //    // shape = RoundedCornerShape(8.dp)
+                                //)
                                 .padding(horizontal = 12.dp, vertical = 8.dp)
                         ) {
                             Text(

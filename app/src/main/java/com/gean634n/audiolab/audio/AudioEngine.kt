@@ -9,7 +9,8 @@ import android.media.AudioManager
 import com.gean634n.audiolab.ui.waveform.WaveformType
 
 class AudioEngine (
-    private val context: Context
+    private val context: Context,
+    private val transport: AudioTransport = LibPdTransport()
 ) {
     fun start() {
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -38,7 +39,7 @@ class AudioEngine (
     }
 
     fun mute() {
-        PdBase.sendFloat("level", 0f)
+        transport.sendFloat("level", 0f)
     }
 
     private fun copyPatchToInternalStorage(): File {
@@ -55,11 +56,11 @@ class AudioEngine (
 
     fun setLevelDb(db: Float) {
         val amplitude = 10f.pow(db / 20f)
-        PdBase.sendFloat("level", amplitude)
+        transport.sendFloat("level", amplitude)
     }
 
     fun setFrequencyHz(hz: Float) {
-        PdBase.sendFloat("frequency", hz)
+        transport.sendFloat("frequency", hz)
     }
 
     fun setWaveform(type: WaveformType) {
@@ -70,7 +71,7 @@ class AudioEngine (
             WaveformType.TRIANGLE -> 3f
         }
 
-        PdBase.sendFloat("waveform", value)
+        transport.sendFloat("waveform", value)
     }
 }
 

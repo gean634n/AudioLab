@@ -10,7 +10,7 @@ import com.gean634n.audiolab.ui.waveform.WaveformType
 
 class AudioEngine (
     private val context: Context,
-    private val transport: AudioTransport = LibPdTransport()
+    private val transport: AudioTransport = AudioTransportFactory.create()
 ) {
     fun start() {
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager

@@ -3,6 +3,7 @@ package com.gean634n.audiolab.audio
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
+import java.util.concurrent.Executors
 
 class UdpTransport(
     host: String,
@@ -12,24 +13,29 @@ class UdpTransport(
     private val address = InetAddress.getByName(host)
     private val socket = DatagramSocket()
 
+    private val executor = Executors.newSingleThreadExecutor()
+
     override fun sendFloat(
         receiver: String,
         value: Float
     ) {
-        val message = "$receiver $value;"
-        val data = message.toByteArray()
+        executor.execute {
+            val message = "$receiver $value;\n"
+            val data = message.toByteArray()
 
-        val packet = DatagramPacket(
-            data,
-            data.size,
-            address,
-            port
-        )
+            val packet = DatagramPacket(
+                data,
+                data.size,
+                address,
+                port
+            )
 
-        socket.send(packet)
+            socket.send(packet)
+        }
     }
 
     fun close() {
+        executor.shutdown()
         socket.close()
     }
 }

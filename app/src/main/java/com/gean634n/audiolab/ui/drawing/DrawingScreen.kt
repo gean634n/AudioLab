@@ -22,6 +22,7 @@ import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Stop
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -33,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gean634n.audiolab.drawing.DrawingColor
 import com.gean634n.audiolab.drawing.DrawingTool
@@ -245,6 +247,44 @@ fun DrawingScreen(
                     playbackPointCount = playbackPointCount,
                     modifier = Modifier.fillMaxSize()
                 )
+
+                viewModel.state.strokes.lastOrNull()?.let { stroke ->
+                    viewModel.lastStrokeMetrics?.let { metrics ->
+                        Column(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(12.dp)
+                                .background(
+                                    color = Color.White.copy(alpha = 0.9f),
+                                    // shape = RoundedCornerShape(8.dp)
+                                )
+                                .border(
+                                    width = 1.dp,
+                                    color = Color(0xFF1E1E1E),
+                                    // shape = RoundedCornerShape(8.dp)
+                                )
+                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                        ) {
+                            Text(
+                                text = """
+                                    Ferramenta: ${stroke.tool}
+                                    Linha: ${stroke.lineStyle}
+                                    Cor: ${stroke.color}
+                                    Duração: ${metrics.durationMillis} ms
+                                    Velocidade: %.2f
+                                    X médio: %.2f
+                                    Y médio: %.2f
+                                    Direção: ${metrics.direction}
+                                """.trimIndent().format(
+                                    metrics.averageSpeed,
+                                    metrics.averageX,
+                                    metrics.averageY
+                                ),
+                                fontSize = 12.sp,
+                                lineHeight = 14.sp)
+                        }
+                    }
+                }
             }
         }
     }

@@ -1,26 +1,42 @@
 package com.gean634n.audiolab.ui.drawing
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.Redo
+import androidx.compose.material.icons.automirrored.rounded.Undo
+import androidx.compose.material.icons.rounded.DeleteOutline
+import androidx.compose.material.icons.rounded.FileDownload
+import androidx.compose.material.icons.rounded.Pause
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Stop
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
-import com.gean634n.audiolab.drawing.DrawingColor
-import com.gean634n.audiolab.drawing.DrawingTool
-import com.gean634n.audiolab.drawing.LineStyle
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.gean634n.audiolab.drawing.DrawingColor
+import com.gean634n.audiolab.drawing.DrawingTool
+import com.gean634n.audiolab.drawing.LineStyle
 import kotlinx.coroutines.delay
 
 @Composable
@@ -29,17 +45,26 @@ fun DrawingScreen(
     viewModel: DrawingViewModel = viewModel()
 ) {
     val playingStrokeIndex = viewModel.state.playingStrokeIndex
-    var playbackPointCount by remember { mutableIntStateOf(0) }
-
     val isPaused = viewModel.state.isPaused
 
-    LaunchedEffect(
-        playingStrokeIndex,
-        isPaused
-    ) {
+    var playbackPointCount by remember {
+        mutableIntStateOf(0)
+    }
+
+    var playbackStrokeIndex by remember {
+        mutableStateOf<Int?>(null)
+    }
+
+    LaunchedEffect(playingStrokeIndex, isPaused) {
         if (playingStrokeIndex == null) {
             playbackPointCount = 0
+            playbackStrokeIndex = null
             return@LaunchedEffect
+        }
+
+        if (playbackStrokeIndex != playingStrokeIndex) {
+            playbackPointCount = 0
+            playbackStrokeIndex = playingStrokeIndex
         }
 
         if (isPaused) {
@@ -65,192 +90,182 @@ fun DrawingScreen(
         viewModel.playNextStroke()
     }
 
-    Box(
-        modifier = modifier.fillMaxSize()
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color(0xFFE9ECEF))
+            .padding(16.dp)
     ) {
-        DrawingCanvas(
-            strokes = viewModel.state.strokes,
-            onStrokeFinished = viewModel::addStroke,
-            selectedTool = viewModel.state.selectedTool,
-            selectedLineStyle = viewModel.state.selectedLineStyle,
-            selectedColor = viewModel.state.selectedColor,
-            playingStrokeIndex = viewModel.state.playingStrokeIndex,
-            playbackPointCount = playbackPointCount,
-            modifier = Modifier.fillMaxSize()
-        )
 
+        // ------------------------------------------------
+        // Top Bar
+        // ------------------------------------------------
         Row(
             modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            SketchButton(
-                text = if (viewModel.state.isPaused) {
-                    "Continuar"
-                } else {
-                    "Play"
-                },
-                onClick = {
-                    if (viewModel.state.isPaused) {
-                        viewModel.resume()
-                    } else {
-                        viewModel.play()
-                    }
-                },
-                enabled = viewModel.state.strokes.isNotEmpty()
-            )
-
-            SketchButton(
-                text = "Pause",
-                onClick = viewModel::pause,
-                enabled =
-                    viewModel.state.playingStrokeIndex != null &&
-                            !viewModel.state.isPaused
-            )
-
-            SketchButton(
-                text = "Stop",
-                onClick = viewModel::stop,
-                enabled = viewModel.state.playingStrokeIndex != null
-            )
-        }
-
-        viewModel.lastStrokeMetrics?.let { metrics ->
-            Text(
-                text = """
-            Tool: ${viewModel.state.selectedTool}
-            Linha: ${viewModel.state.selectedLineStyle}
-            Cor: ${viewModel.state.selectedColor}
-            Duração: ${metrics.durationMillis} ms
-            Velocidade: %.2f
-            X médio: %.2f
-            Y médio: %.2f
-            Direção: ${metrics.direction}
-        """.trimIndent().format(
-                    metrics.averageSpeed,
-                    metrics.averageX,
-                    metrics.averageY
-                ),
+            
+            // Playback Group
+            Row(
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp)
-            )
-        }
-
-        Row(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            IconButton(
-                onClick = viewModel::undo,
-                enabled = viewModel.canUndo
+                    .border(
+                        width = 1.5.dp,
+                        color = Color(0xFF1E1E1E),
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    .background(Color.White, RoundedCornerShape(16.dp))
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text("↶")
-            }
-
-            IconButton(
-                onClick = viewModel::redo,
-                enabled = viewModel.canRedo
-            ) {
-                Text("↷")
-            }
-
-            IconButton(
-                onClick = viewModel::clear,
-                enabled = viewModel.state.strokes.isNotEmpty()
-            ) {
-                Text("✕")
-            }
-        }
-
-        Row(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = 16.dp, bottom = 112.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            DrawingColor.entries.forEach { drawingColor ->
-                val selected = drawingColor == viewModel.state.selectedColor
-
-                Button(
+                SketchButton(
                     onClick = {
-                        viewModel.selectColor(drawingColor)
+                        if (viewModel.state.isPaused) viewModel.resume() else viewModel.play()
+                    },
+                    backgroundColor = Color(0xFF6FCF97),
+                    enabled = viewModel.state.strokes.isNotEmpty() && (playingStrokeIndex == null || isPaused)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.PlayArrow,
+                        contentDescription = "Play",
+                        tint = Color.White
+                    )
+                }
+
+                SketchButton(
+                    onClick = viewModel::pause,
+                    backgroundColor = Color(0xFFF2C94C),
+                    enabled = playingStrokeIndex != null && !isPaused
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Pause,
+                        contentDescription = "Pause",
+                        tint = Color.White
+                    )
+                }
+
+                SketchButton(
+                    onClick = viewModel::stop,
+                    backgroundColor = Color(0xFFE85D5D),
+                    enabled = playingStrokeIndex != null
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Stop,
+                        contentDescription = "Stop",
+                        tint = Color.White
+                    )
+                }
+            }
+
+            // Actions Group
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                SketchButton(onClick = viewModel::undo, enabled = viewModel.canUndo) {
+                    Icon(Icons.AutoMirrored.Rounded.Undo, "Undo")
+                }
+                SketchButton(onClick = viewModel::redo, enabled = viewModel.canRedo) {
+                    Icon(Icons.AutoMirrored.Rounded.Redo, "Redo")
+                }
+                SketchButton(onClick = viewModel::clear, enabled = viewModel.state.strokes.isNotEmpty()) {
+                    Icon(Icons.Rounded.DeleteOutline, "Clear")
+                }
+                SketchButton(onClick = { /* TODO: Download */ }) {
+                    Icon(Icons.Rounded.FileDownload, "Save")
+                }
+            }
+        }
+
+        // ------------------------------------------------
+        // Body
+        // ------------------------------------------------
+        Row(modifier = Modifier.fillMaxSize()) {
+            
+            // Sidebar
+            Column(
+                modifier = Modifier
+                    .width(80.dp)
+                    .fillMaxHeight()
+                    .padding(end = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Tools Section
+                SidebarSection {
+                    DrawingTool.entries.forEach { tool ->
+                        DrawingToolButton(
+                            tool = tool,
+                            selected = tool == viewModel.state.selectedTool,
+                            onClick = { viewModel.selectTool(tool) }
+                        )
                     }
-                ) {
-                    Text(
-                        when (drawingColor) {
-                            DrawingColor.BLACK ->
-                                if (selected) "✓ Preto" else "Preto"
+                }
 
-                            DrawingColor.BLUE ->
-                                if (selected) "✓ Azul" else "Azul"
+                // Styles Section
+                SidebarSection {
+                    LineStyle.entries.forEach { style ->
+                        LineStyleButton(
+                            lineStyle = style,
+                            selected = style == viewModel.state.selectedLineStyle,
+                            onClick = { viewModel.selectLineStyle(style) }
+                        )
+                    }
+                }
 
-                            DrawingColor.RED ->
-                                if (selected) "✓ Vermelho" else "Vermelho"
-
-                            DrawingColor.YELLOW ->
-                                if (selected) "✓ Amarelo" else "Amarelo"
-
-                            DrawingColor.GREEN ->
-                                if (selected) "✓ Verde" else "Verde"
-                        }
-                    )
+                // Colors Section
+                SidebarSection {
+                    DrawingColor.entries.forEach { color ->
+                        DrawingColorButton(
+                            drawingColor = color,
+                            selected = color == viewModel.state.selectedColor,
+                            onClick = { viewModel.selectColor(color) }
+                        )
+                    }
                 }
             }
-        }
 
-        Row(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            DrawingTool.entries.forEach { tool ->
-                val selected = tool == viewModel.state.selectedTool
-
-                Button(
-                    onClick = { viewModel.selectTool(tool) }
-                ) {
-                    Text(
-                        when (tool) {
-                            DrawingTool.PENCIL -> if (selected) "✓ Lápis" else "Lápis"
-                            DrawingTool.MARKER -> if (selected) "✓ Canetinha" else "Canetinha"
-                            DrawingTool.NIB -> if (selected) "✓ Bico de pena" else "Bico de pena"
-                        }
+            // Canvas Area
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .border(
+                        width = 2.dp,
+                        color = Color(0xFF1E1E1E),
+                        shape = RoundedCornerShape(4.dp)
                     )
-                }
-            }
-        }
-
-        Row(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = 16.dp, bottom = 64.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            LineStyle.entries.forEach { lineStyle ->
-                val selected = lineStyle == viewModel.state.selectedLineStyle
-
-                Button(
-                    onClick = { viewModel.selectLineStyle(lineStyle) }
-                ) {
-                    Text(
-                        when (lineStyle) {
-                            LineStyle.SOLID ->
-                                if (selected) "✓ Contínuo" else "Contínuo"
-
-                            LineStyle.DASHED ->
-                                if (selected) "✓ Tracejado" else "Tracejado"
-
-                            LineStyle.DOTTED ->
-                                if (selected) "✓ Pontilhado" else "Pontilhado"
-                        }
-                    )
-                }
+                    .background(Color.White)
+            ) {
+                DrawingCanvas(
+                    strokes = viewModel.state.strokes,
+                    onStrokeFinished = viewModel::addStroke,
+                    selectedTool = viewModel.state.selectedTool,
+                    selectedLineStyle = viewModel.state.selectedLineStyle,
+                    selectedColor = viewModel.state.selectedColor,
+                    playingStrokeIndex = viewModel.state.playingStrokeIndex,
+                    playbackPointCount = playbackPointCount,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
         }
     }
+}
+
+@Composable
+private fun SidebarSection(
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                width = 1.5.dp,
+                color = Color(0xFF1E1E1E),
+                shape = RoundedCornerShape(20.dp)
+            )
+            .background(Color.White, RoundedCornerShape(20.dp))
+            .padding(vertical = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        content = content
+    )
 }

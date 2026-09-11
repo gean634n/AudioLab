@@ -7,12 +7,36 @@ import java.io.File
 import kotlin.math.pow
 import android.media.AudioManager
 import com.gean634n.audiolab.ui.waveform.WaveformType
+import android.util.Log
+import java.util.concurrent.Executors
 
 class AudioEngine (
-    private val context: Context,
-    private val transport: AudioTransport = AudioTransportFactory.create()
+    private val context: Context
 ) {
+    @Volatile
+    private var transport: AudioTransport = LibPdTransport()
+
     fun start() {
+        val executor = Executors.newSingleThreadExecutor()
+
+        executor.execute {
+            val handshake = UdpHandshake(
+                host = AudioConfig.debugHost,
+                sendPort = AudioConfig.debugPort,
+                replyPort = AudioConfig.debugReplyPort,
+                timeoutMillis = AudioConfig.handshakeTimeoutMillis
+            )
+
+            val available = handshake.check()
+
+//            Log.d(
+//                "AudioDebug",
+//                "UDP handshake: $available"
+//            )
+
+            executor.shutdown()
+        }
+
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
         val sampleRate = audioManager.getProperty(
@@ -32,6 +56,46 @@ class AudioEngine (
         PdBase.openPatch(patchFile)
 
         PdAudio.startAudio(context)
+        selectTransport()
+    }
+
+    private fun selectTransport() {
+        if (AudioConfig.mode == AudioMode.NORMAL) {
+            transport = AudioTransportFactory.create(
+                debugAvailable = false
+            )
+
+            Log.d("AudioDebug", "Transport: LOCAL")
+            return
+        }
+
+        val executor = Executors.newSingleThreadExecutor()
+
+        executor.execute {
+            val handshake = UdpHandshake(
+                host = AudioConfig.debugHost,
+                sendPort = AudioConfig.debugPort,
+                replyPort = AudioConfig.debugReplyPort,
+                timeoutMillis = AudioConfig.handshakeTimeoutMillis
+            )
+
+            val debugAvailable = handshake.check()
+
+            transport = AudioTransportFactory.create(
+                debugAvailable = debugAvailable
+            )
+
+            Log.d(
+                "AudioDebug",
+                if (debugAvailable) {
+                    "Transport: UDP"
+                } else {
+                    "Transport: LOCAL"
+                }
+            )
+
+            executor.shutdown()
+        }
     }
 
     fun stop() {

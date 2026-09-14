@@ -46,6 +46,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.pd.core)
     implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.javaosc.core)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)

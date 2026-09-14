@@ -17,26 +17,6 @@ class AudioEngine (
     private var transport: AudioTransport = LibPdTransport()
 
     fun start() {
-        val executor = Executors.newSingleThreadExecutor()
-
-        executor.execute {
-            val handshake = UdpHandshake(
-                host = AudioConfig.debugHost,
-                sendPort = AudioConfig.debugPort,
-                replyPort = AudioConfig.debugReplyPort,
-                timeoutMillis = AudioConfig.handshakeTimeoutMillis
-            )
-
-            val available = handshake.check()
-
-//            Log.d(
-//                "AudioDebug",
-//                "UDP handshake: $available"
-//            )
-
-            executor.shutdown()
-        }
-
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
         val sampleRate = audioManager.getProperty(
@@ -138,4 +118,3 @@ class AudioEngine (
         transport.sendFloat("waveform", value)
     }
 }
-

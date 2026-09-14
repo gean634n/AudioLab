@@ -11,13 +11,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gean634n.audiolab.audio.AudioEngine
+import com.gean634n.audiolab.ui.audioEngineViewModelFactory
 
 @Composable
 fun TouchPadScreen(
     audioEngine: AudioEngine,
     modifier: Modifier = Modifier,
     viewModel: TouchPadViewModel = viewModel(
-        factory = TouchPadViewModelFactory(audioEngine)
+        factory = audioEngineViewModelFactory(audioEngine)
     )
 ) {
     TouchPadContent(

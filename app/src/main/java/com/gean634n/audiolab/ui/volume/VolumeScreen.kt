@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gean634n.audiolab.audio.AudioEngine
+import com.gean634n.audiolab.ui.audioEngineViewModelFactory
 import com.gean634n.audiolab.ui.theme.AudioLabTheme
 
 @Composable
@@ -20,7 +21,7 @@ fun VolumeScreen(
     audioEngine: AudioEngine,
     modifier: Modifier = Modifier,
     viewModel: VolumeViewModel = viewModel(
-        factory = VolumeViewModelFactory(audioEngine)
+        factory = audioEngineViewModelFactory(audioEngine)
     )
 ) {
     VolumeContent(

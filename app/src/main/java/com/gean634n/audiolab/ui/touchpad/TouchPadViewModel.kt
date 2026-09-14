@@ -55,12 +55,3 @@ private fun yToFrequency(y: Float): Float {
 private fun xToLevelDb(x: Float): Float {
     return MIN_LEVEL_DB + x * (MAX_LEVEL_DB - MIN_LEVEL_DB)
 }
-
-class TouchPadViewModelFactory(
-    private val audioEngine: AudioEngine
-) : ViewModelProvider.Factory {
-
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return TouchPadViewModel(audioEngine) as T
-    }
-}

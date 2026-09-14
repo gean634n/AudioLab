@@ -39,12 +39,3 @@ class OscillatorsViewModel(
         audioEngine.setFrequencyHz(frequencyHz)
     }
 }
-
-class OscillatorsViewModelFactory(
-    private val audioEngine: AudioEngine
-) : ViewModelProvider.Factory {
-
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return OscillatorsViewModel(audioEngine) as T
-    }
-}

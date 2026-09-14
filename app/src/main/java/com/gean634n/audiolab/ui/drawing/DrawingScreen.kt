@@ -27,9 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -39,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gean634n.audiolab.drawing.DrawingColor
+import com.gean634n.audiolab.drawing.DrawingPlaybackController
 import com.gean634n.audiolab.drawing.DrawingTool
 import com.gean634n.audiolab.drawing.LineStyle
 import kotlinx.coroutines.delay
@@ -52,27 +51,22 @@ fun DrawingScreen(
     val isPlaying = viewModel.state.isPlaying
     val isPaused = viewModel.state.isPaused
 
-    var playheadX by remember {
-        mutableFloatStateOf(0f)
+    val playbackController = remember {
+        DrawingPlaybackController()
     }
 
     var playbackElapsedMillis by remember {
         mutableLongStateOf(0L)
     }
 
+    val playheadX = playbackController.playheadX(
+        elapsedMillis = playbackElapsedMillis
+    )
+
     val playbackStrokes = viewModel.playbackStrokes
-
-    var playbackPointCount by remember {
-        mutableIntStateOf(0)
-    }
-
-    var playbackStrokeIndex by remember {
-        mutableStateOf<Int?>(null)
-    }
 
     LaunchedEffect(isPlaying, isPaused) {
         if (!isPlaying) {
-            playheadX = 0f
             playbackElapsedMillis = 0L
             return@LaunchedEffect
         }
@@ -81,13 +75,10 @@ fun DrawingScreen(
             return@LaunchedEffect
         }
 
-        while (playheadX < 1f) {
+        while (!playbackController.isFinished(playbackElapsedMillis)) {
             delay(16L)
 
             playbackElapsedMillis += 16L
-
-            playheadX = (playheadX + 0.002f)
-                .coerceAtMost(1f)
         }
 
         viewModel.stop()
@@ -249,6 +240,7 @@ fun DrawingScreen(
                     selectedColor = viewModel.state.selectedColor,
                     playheadX = playheadX,
                     playbackElapsedMillis = playbackElapsedMillis,
+                    playbackController = playbackController,
                     playbackAnimationMode = viewModel.state.playbackAnimationMode,
                     isPlaying = isPlaying,
                     onStrokeFinished = viewModel::addStroke,
@@ -263,13 +255,7 @@ fun DrawingScreen(
                                 .padding(12.dp)
                                 .background(
                                     color = Color.White.copy(alpha = 0.9f),
-                                    // shape = RoundedCornerShape(8.dp)
                                 )
-                                // .border(
-                                //    width = 1.dp,
-                                //    color = Color(0xFF1E1E1E),
-                                //    // shape = RoundedCornerShape(8.dp)
-                                //)
                                 .padding(horizontal = 12.dp, vertical = 8.dp)
                         ) {
                             Text(

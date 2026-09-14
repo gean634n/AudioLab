@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke as DrawStroke
 import androidx.compose.ui.input.pointer.pointerInput
 import com.gean634n.audiolab.drawing.DrawingColor
+import com.gean634n.audiolab.drawing.DrawingPlaybackController
 import com.gean634n.audiolab.drawing.DrawingTool
 import com.gean634n.audiolab.drawing.Stroke
 import com.gean634n.audiolab.drawing.StrokePoint
@@ -31,6 +32,7 @@ fun DrawingCanvas(
     selectedColor: DrawingColor,
     playheadX: Float,
     playbackElapsedMillis: Long,
+    playbackController: DrawingPlaybackController,
     playbackAnimationMode: PlaybackAnimationMode,
     isPlaying: Boolean,
     onStrokeFinished: (Stroke) -> Unit,
@@ -146,12 +148,16 @@ fun DrawingCanvas(
 
             val startX = firstPoint.x
 
-            val triggerTimeMillis =
-                (startX / 0.002f * 16f).toLong()
+            val strokeElapsedMillis = playbackController.strokeElapsedMillis(
+                    startX = startX,
+                    elapsedMillis = playbackElapsedMillis
+                )
 
-            val strokeElapsedMillis =
-                (playbackElapsedMillis - triggerTimeMillis)
-                    .coerceAtLeast(0L)
+            val hasReachedStroke =
+                playbackController.hasReached(
+                    startX = startX,
+                    elapsedMillis = playbackElapsedMillis
+                )
 
             val blinkDurationMillis = 120L
 
@@ -161,7 +167,7 @@ fun DrawingCanvas(
                 } else {
                     when (playbackAnimationMode) {
                         PlaybackAnimationMode.HIDE_ALL_SHOW_FULL -> {
-                            if (playheadX < startX) {
+                            if (!hasReachedStroke) {
                                 emptyList()
                             } else {
                                 stroke.points
@@ -169,7 +175,7 @@ fun DrawingCanvas(
                         }
 
                         PlaybackAnimationMode.HIDE_ALL_REPLAY_TIMING -> {
-                            if (playheadX < startX) {
+                            if (!hasReachedStroke) {
                                 emptyList()
                             } else {
                                 stroke.points.takeWhile { point ->
@@ -183,7 +189,7 @@ fun DrawingCanvas(
 
                         PlaybackAnimationMode.BLINK_FULL -> {
                             when {
-                                playheadX < startX ->
+                                !hasReachedStroke ->
                                     stroke.points
 
                                 strokeElapsedMillis < blinkDurationMillis ->
@@ -196,7 +202,7 @@ fun DrawingCanvas(
 
                         PlaybackAnimationMode.BLINK_REPLAY_TIMING -> {
                             when {
-                                playheadX < startX ->
+                                !hasReachedStroke ->
                                     stroke.points
 
                                 strokeElapsedMillis < blinkDurationMillis ->

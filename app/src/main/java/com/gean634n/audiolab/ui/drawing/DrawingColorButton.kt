@@ -1,17 +1,12 @@
 package com.gean634n.audiolab.ui.drawing
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import com.gean634n.audiolab.drawing.DrawingColor
-
+import androidx.compose.ui.graphics.drawscope.Stroke
 @Composable
 fun DrawingColorButton(
     drawingColor: DrawingColor,
@@ -21,27 +16,26 @@ fun DrawingColorButton(
 ) {
     val color = drawingColor.toComposeColor()
 
-    Box(
+    SelectableSwatch(
+        selected = false,
+        onClick = onClick,
         modifier = modifier
-            .size(48.dp)
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
     ) {
         Canvas(modifier = Modifier.size(32.dp)) {
-            drawCircle(
-                color = color,
-                radius = size.minDimension * 0.4f
-            )
-
             if (selected) {
                 drawCircle(
-                    color = Color(0xFF1E1E1E),
+                    color = color,
                     radius = size.minDimension * 0.5f,
                     style = Stroke(
                         width = 1.5.dp.toPx()
                     )
                 )
             }
+
+            drawCircle(
+                color = color,
+                radius = size.minDimension * 0.4f
+            )
         }
     }
 }

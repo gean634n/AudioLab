@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke as DrawStroke
 import androidx.compose.ui.input.pointer.pointerInput
 import com.gean634n.audiolab.drawing.DrawingColor
@@ -130,34 +129,12 @@ fun DrawingCanvas(
                 DrawingTool.NIB -> 5f
             }
 
-            val pathEffect = when (lineStyle) {
-                LineStyle.SOLID -> null
-
-                LineStyle.DASHED ->
-                    PathEffect.dashPathEffect(
-                        intervals = floatArrayOf(20f, 12f)
-                    )
-
-                LineStyle.DOTTED ->
-                    PathEffect.dashPathEffect(
-                        intervals = floatArrayOf(2f, 12f)
-                    )
-            }
-
-            val color = when (drawingColor) {
-                DrawingColor.BLACK -> Color(0xFF1E1E1E)
-                DrawingColor.BLUE -> Color(0xFF4A90E2)
-                DrawingColor.RED -> Color(0xFFE85D5D)
-                DrawingColor.YELLOW -> Color(0xFFF2C94C)
-                DrawingColor.GREEN -> Color(0xFF6FCF97)
-            }
-
             drawPath(
                 path = path,
-                color = color,
+                color = drawingColor.toComposeColor(),
                 style = DrawStroke(
                     width = strokeWidth,
-                    pathEffect = pathEffect
+                    pathEffect = lineStyle.toPathEffect()
                 )
             )
         }

@@ -12,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.unit.dp
 import com.gean634n.audiolab.drawing.LineStyle
 
@@ -43,11 +42,7 @@ fun LineStyleButton(
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        val pathEffect = when (lineStyle) {
-            LineStyle.SOLID -> null
-            LineStyle.DASHED -> PathEffect.dashPathEffect(floatArrayOf(10f, 7f))
-            LineStyle.DOTTED -> PathEffect.dashPathEffect(floatArrayOf(2f, 6f))
-        }
+        val pathEffect = lineStyle.toPathEffect(previewScale = 0.5f)
 
         Canvas(modifier = Modifier.size(32.dp)) {
             drawLine(

@@ -19,13 +19,7 @@ fun DrawingColorButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val color = when (drawingColor) {
-        DrawingColor.BLACK -> Color(0xFF1E1E1E)
-        DrawingColor.BLUE -> Color(0xFFC4E2FF)
-        DrawingColor.RED -> Color(0xFFE85D5D)
-        DrawingColor.YELLOW -> Color(0xFFFFF4CC)
-        DrawingColor.GREEN -> Color(0xFFD4EDDA)
-    }
+    val color = drawingColor.toComposeColor()
 
     Box(
         modifier = modifier

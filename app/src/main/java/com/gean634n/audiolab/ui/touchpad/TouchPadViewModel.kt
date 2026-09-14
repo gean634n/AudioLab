@@ -6,7 +6,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import com.gean634n.audiolab.audio.AudioEngine
 import com.gean634n.audiolab.ui.waveform.WaveformType
 import kotlin.math.pow
@@ -30,9 +29,13 @@ class TouchPadViewModel(
         private set
 
     init {
-        audioEngine.setLevelDb(levelDb)
-        audioEngine.setFrequencyHz(frequencyHz)
         audioEngine.setWaveform(WaveformType.SINE)
+        audioEngine.setFrequencyHz(frequencyHz)
+        audioEngine.setLevelDb(levelDb)
+    }
+
+    override fun onCleared() {
+        audioEngine.mute()
     }
 
     fun onPositionChange(position: Offset) {

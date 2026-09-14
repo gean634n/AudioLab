@@ -9,12 +9,20 @@ import android.media.AudioManager
 import com.gean634n.audiolab.ui.waveform.WaveformType
 import android.util.Log
 import java.util.concurrent.Executors
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 class AudioEngine (
     private val context: Context
 ) {
     @Volatile
     private var transport: AudioTransport = LibPdTransport()
+
+    private val _state = MutableStateFlow(SynthState())
+
+    val state: StateFlow<SynthState> = _state.asStateFlow()
 
     fun start() {
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -99,15 +107,21 @@ class AudioEngine (
     }
 
     fun setLevelDb(db: Float) {
+        _state.update { it.copy(levelDb = db) }
+
         val amplitude = 10f.pow(db / 20f)
         transport.sendFloat("level", amplitude)
     }
 
     fun setFrequencyHz(hz: Float) {
+        _state.update { it.copy(frequencyHz = hz) }
+
         transport.sendFloat("frequency", hz)
     }
 
     fun setWaveform(type: WaveformType) {
+        _state.update { it.copy(waveform = type) }
+
         val value = when (type) {
             WaveformType.SINE -> 0f
             WaveformType.SAWTOOTH -> 1f

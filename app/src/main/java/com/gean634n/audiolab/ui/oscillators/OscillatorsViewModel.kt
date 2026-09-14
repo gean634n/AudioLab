@@ -5,9 +5,10 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import com.gean634n.audiolab.audio.AudioEngine
 import com.gean634n.audiolab.ui.waveform.WaveformType
+
+private const val DEFAULT_LEVEL_DB = -6f
 
 class OscillatorsViewModel(
     private val audioEngine: AudioEngine
@@ -24,7 +25,7 @@ class OscillatorsViewModel(
 
         audioEngine.setWaveform(type)
         audioEngine.setFrequencyHz(frequencyHz)
-        audioEngine.setLevelDb(0f)
+        audioEngine.setLevelDb(DEFAULT_LEVEL_DB)
     }
 
     fun onOscillatorReleased() {

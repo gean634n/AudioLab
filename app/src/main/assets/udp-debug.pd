@@ -30,8 +30,8 @@
 #X obj 859 113 oscparse;
 #X obj 859 156 list trim;
 #X obj 649 402 s frequency;
-#X obj 47 186 print FREQUENCY;
-#X obj 47 229 print LEVEL;
+#X obj 61 197 print FREQUENCY;
+#X obj 19 222 print LEVEL;
 #X obj 701 364 route frequency level waveform;
 #X obj 804 461 route sine sawtooth square triangle;
 #X msg 822 518 0;

@@ -1,10 +1,14 @@
 package com.gean634n.audiolab.audio
 
 import android.util.Log
-import java.net.DatagramPacket
-import java.net.DatagramSocket
-import java.net.InetAddress
-import java.net.SocketTimeoutException
+import io.github.termtate.kotlinosc.transport.OscClient
+import io.github.termtate.kotlinosc.transport.dsl.oscServer
+import io.github.termtate.kotlinosc.type.OscMessage
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
+import java.net.InetSocketAddress
+import kotlin.time.Duration.Companion.milliseconds
 
 class UdpHandshake(
     host: String,
@@ -13,59 +17,49 @@ class UdpHandshake(
     private val timeoutMillis: Int
 ) {
 
-    private val address = InetAddress.getByName(host)
+    private val targetAddress = InetSocketAddress(
+        host,
+        sendPort
+    )
 
-    fun check(): Boolean {
-        return try {
-            DatagramSocket(replyPort).use { socket ->
-                socket.soTimeout = timeoutMillis
+    fun check(): Boolean = runBlocking {
+        val pongReceived = CompletableDeferred<Unit>()
 
-                sendPing(socket)
-                waitForPong(socket)
+        val server = oscServer(
+            ipAddress = "0.0.0.0",
+            port = replyPort
+        ) {
+            route {
+                on("/system/pong") {
+                    Log.d("AudioDebug", "OSC pong received")
+                    pongReceived.complete(Unit)
+                }
             }
+        }
+
+        val client = OscClient(
+            targetAddress = targetAddress
+        )
+
+        try {
+            server.start()
+
+            client.send(
+                OscMessage(
+                    address = "/system/ping"
+                )
+            )
+
+            withTimeoutOrNull(timeoutMillis.milliseconds) {
+                pongReceived.await()
+            } != null
+
         } catch (_: Exception) {
             false
-        }
-    }
 
-    private fun sendPing(socket: DatagramSocket) {
-        val data = "ping;\n".toByteArray()
-
-        val packet = DatagramPacket(
-            data,
-            data.size,
-            address,
-            sendPort
-        )
-
-        socket.send(packet)
-    }
-
-    private fun waitForPong(socket: DatagramSocket): Boolean {
-        val buffer = ByteArray(64)
-
-        val packet = DatagramPacket(
-            buffer,
-            buffer.size
-        )
-
-        return try {
-            socket.receive(packet)
-
-            val response = String(
-                packet.data,
-                0,
-                packet.length
-            ).trim()
-
-//            Log.d(
-//                "AudioDebug",
-//                "Handshake response: '$response' from ${packet.address.hostAddress}:${packet.port}"
-//            )
-
-            response == "pong;"
-        } catch (_: SocketTimeoutException) {
-            false
+        } finally {
+            client.closeAndJoin()
+            server.stop()
         }
     }
 }

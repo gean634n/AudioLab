@@ -10,4 +10,11 @@ class LibPdTransport : AudioTransport {
     ) {
         PdBase.sendFloat(receiver, value)
     }
+
+    override fun sendString(
+        receiver: String,
+        value: String
+    ) {
+        PdBase.sendSymbol(receiver, value)
+    }
 }

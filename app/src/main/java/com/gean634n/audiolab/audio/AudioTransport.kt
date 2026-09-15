@@ -5,4 +5,9 @@ interface AudioTransport {
         receiver: String,
         value: Float
     )
+
+    fun sendString(
+        receiver: String,
+        value: String
+    )
 }

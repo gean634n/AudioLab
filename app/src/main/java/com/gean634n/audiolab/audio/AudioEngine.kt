@@ -91,7 +91,7 @@ class AudioEngine (
     }
 
     fun mute() {
-        transport.sendFloat("level", 0f)
+        transport.sendFloat("/audio/level", 0f)
     }
 
     private fun copyPatchToInternalStorage(): File {
@@ -110,25 +110,24 @@ class AudioEngine (
         _state.update { it.copy(levelDb = db) }
 
         val amplitude = 10f.pow(db / 20f)
-        transport.sendFloat("level", amplitude)
+        transport.sendFloat("/audio/level", amplitude)
     }
 
     fun setFrequencyHz(hz: Float) {
         _state.update { it.copy(frequencyHz = hz) }
-
-        transport.sendFloat("frequency", hz)
+        transport.sendFloat("/audio/frequency", hz)
     }
 
     fun setWaveform(type: WaveformType) {
         _state.update { it.copy(waveform = type) }
 
         val value = when (type) {
-            WaveformType.SINE -> 0f
-            WaveformType.SAWTOOTH -> 1f
-            WaveformType.SQUARE -> 2f
-            WaveformType.TRIANGLE -> 3f
+            WaveformType.SINE -> "sine"
+            WaveformType.SAWTOOTH -> "sawtooth"
+            WaveformType.SQUARE -> "square"
+            WaveformType.TRIANGLE -> "triangle"
         }
 
-        transport.sendFloat("waveform", value)
+        transport.sendString("/audio/waveform", value)
     }
 }

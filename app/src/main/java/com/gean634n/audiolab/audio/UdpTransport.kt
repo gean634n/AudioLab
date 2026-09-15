@@ -1,41 +1,57 @@
 package com.gean634n.audiolab.audio
 
-import java.net.DatagramPacket
-import java.net.DatagramSocket
-import java.net.InetAddress
-import java.util.concurrent.Executors
+import io.github.termtate.kotlinosc.arg.toOscFloat32
+import io.github.termtate.kotlinosc.arg.toOscString
+import io.github.termtate.kotlinosc.transport.OscClient
+import io.github.termtate.kotlinosc.type.OscMessage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import java.net.InetSocketAddress
 
 class UdpTransport(
     host: String,
-    private val port: Int
+    port: Int
 ) : AudioTransport {
 
-    private val address = InetAddress.getByName(host)
-    private val socket = DatagramSocket()
+    private val client = OscClient(
+        targetAddress = InetSocketAddress(host, port)
+    )
 
-    private val executor = Executors.newSingleThreadExecutor()
+    private val scope = CoroutineScope(
+        SupervisorJob() + Dispatchers.IO
+    )
 
     override fun sendFloat(
         receiver: String,
         value: Float
     ) {
-        executor.execute {
-            val message = "$receiver $value;\n"
-            val data = message.toByteArray()
-
-            val packet = DatagramPacket(
-                data,
-                data.size,
-                address,
-                port
+        scope.launch {
+            client.send(
+                OscMessage(
+                    address = receiver,
+                    args = listOf(value.toOscFloat32())
+                )
             )
+        }
+    }
 
-            socket.send(packet)
+    override fun sendString(
+        receiver: String,
+        value: String
+    ) {
+        scope.launch {
+            client.send(
+                OscMessage(
+                    address = receiver,
+                    args = listOf(value.toOscString())
+                )
+            )
         }
     }
 
     fun close() {
-        executor.shutdown()
-        socket.close()
+        client.close()
     }
 }

@@ -1,5 +1,6 @@
 package com.gean634n.audiolab.audio
 
+import android.util.Log
 import org.puredata.core.PdBase
 
 class LibPdTransport : AudioTransport {
@@ -8,6 +9,7 @@ class LibPdTransport : AudioTransport {
         receiver: String,
         value: Float
     ) {
+        Log.d("AudioDebug", "libpd float: $receiver = $value")
         PdBase.sendFloat(receiver, value)
     }
 
@@ -15,6 +17,7 @@ class LibPdTransport : AudioTransport {
         receiver: String,
         value: String
     ) {
+        Log.d("AudioDebug", "libpd string: $receiver = $value")
         PdBase.sendSymbol(receiver, value)
     }
 }

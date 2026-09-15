@@ -1,7 +1,9 @@
 package com.gean634n.audiolab.audio
 
 import android.util.Log
+import io.github.termtate.kotlinosc.exception.OscCodecException
 import io.github.termtate.kotlinosc.transport.OscClient
+import io.github.termtate.kotlinosc.transport.OscTransportHook
 import io.github.termtate.kotlinosc.transport.dsl.oscServer
 import io.github.termtate.kotlinosc.type.OscMessage
 import kotlinx.coroutines.CompletableDeferred
@@ -29,6 +31,26 @@ class UdpHandshake(
             ipAddress = "0.0.0.0",
             port = replyPort
         ) {
+            transportHook = object : OscTransportHook {
+
+                override fun onDecodeError(
+                    payload: ByteArray,
+                    error: OscCodecException
+                ) {
+                    Log.d(
+                        "AudioDebug",
+                        "OSC decode error: ${error.message}; bytes=${payload.joinToString()}"
+                    )
+                }
+
+                override fun onTransportError(error: Throwable) {
+                    Log.d(
+                        "AudioDebug",
+                        "OSC transport error: ${error.message}"
+                    )
+                }
+            }
+
             route {
                 on("/system/pong") {
                     Log.d("AudioDebug", "OSC pong received")

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.gean634n.audiolab.audio.AudioEngine
 import androidx.navigation.compose.NavHost
@@ -17,13 +18,17 @@ import androidx.compose.runtime.LaunchedEffect
 import com.gean634n.audiolab.ui.oscillators.OscillatorScreen
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
+import com.gean634n.audiolab.settings.SettingsViewModel
 import com.gean634n.audiolab.ui.drawing.DrawingScreen
+import com.gean634n.audiolab.ui.settings.SettingsScreen
 
 @Composable
 fun AudioLabApp(
     audioEngine: AudioEngine
 ) {
     val navController = rememberNavController()
+
+    val settingsViewModel: SettingsViewModel = viewModel()
 
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route
@@ -55,6 +60,9 @@ fun AudioLabApp(
                     },
                     onOpenDrawing = {
                         navController.navigate("drawing")
+                    },
+                    onOpenSettings = {
+                        navController.navigate("settings")
                     }
                 )
             }
@@ -79,6 +87,12 @@ fun AudioLabApp(
 
             composable("drawing") {
                 DrawingScreen()
+            }
+
+            composable("settings") {
+                SettingsScreen(
+                    viewModel = settingsViewModel
+                )
             }
         }
     }

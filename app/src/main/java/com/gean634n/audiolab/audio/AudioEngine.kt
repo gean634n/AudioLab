@@ -33,6 +33,9 @@ class AudioEngine (
     private val _executionState = MutableStateFlow(AudioExecutionState.DEVICE)
     val executionState: StateFlow<AudioExecutionState> = _executionState.asStateFlow()
 
+    // TODO: Separar a inicialização do engine da seleção do transporte.
+    //  Atualmente start() ainda seleciona o transporte antes de o DataStore
+    //  terminar de carregar as configurações persistidas.
     fun start() {
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
 
@@ -143,6 +146,9 @@ class AudioEngine (
         selectTransport(settings)
     }
 
+    // TODO: Revisar o ciclo de vida do transporte.
+    //  Após close(), transport ainda referencia o objeto fechado.
+    //  Tratar corretamente o ciclo onStop -> onStart.
     fun stop() {
         transport.close()
         PdAudio.release()

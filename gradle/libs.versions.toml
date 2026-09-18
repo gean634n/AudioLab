@@ -12,6 +12,7 @@ composeBom = "2026.02.01"
 pdCore = "1.2.1-rc6"
 navigation = "2.10.0"
 kotlinosc = "0.3.0"
+datastore = "1.1.7"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -33,6 +34,7 @@ pd-core = { module = "io.github.libpd.android:pd-core", version.ref = "pdCore" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 kotlinosc = { module = "io.github.termtate.kotlinosc:kotlinosc", version.ref = "kotlinosc" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

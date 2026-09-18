@@ -18,6 +18,7 @@ import androidx.compose.runtime.LaunchedEffect
 import com.gean634n.audiolab.ui.oscillators.OscillatorScreen
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gean634n.audiolab.settings.SettingsViewModel
 import com.gean634n.audiolab.ui.drawing.DrawingScreen
@@ -29,7 +30,10 @@ fun AudioLabApp(
 ) {
     val navController = rememberNavController()
 
-    val settingsViewModel: SettingsViewModel = viewModel()
+    val context = LocalContext.current
+    val settingsViewModel: SettingsViewModel = viewModel(
+        factory = SettingsViewModel.factory(context)
+    )
     val audioSettings by settingsViewModel.audioSettings.collectAsStateWithLifecycle()
 
     val audioExecutionState by audioEngine.executionState.collectAsStateWithLifecycle()
@@ -38,7 +42,9 @@ fun AudioLabApp(
     val currentRoute = currentBackStackEntry?.destination?.route
 
     LaunchedEffect(audioSettings) {
-        audioEngine.applySettings(audioSettings)
+        audioSettings?.let { settings ->
+            audioEngine.applySettings(settings)
+        }
     }
 
     LaunchedEffect(currentRoute) {
@@ -98,11 +104,13 @@ fun AudioLabApp(
             }
 
             composable("settings") {
-                SettingsScreen(
-                    viewModel = settingsViewModel,
-                    executionState = audioExecutionState,
-                    onRetryComputerConnection = audioEngine::retryComputerConnection
-                )
+                audioSettings?.let {
+                    SettingsScreen(
+                        viewModel = settingsViewModel,
+                        executionState = audioExecutionState,
+                        onRetryComputerConnection = audioEngine::retryComputerConnection
+                    )
+                }
             }
         }
     }

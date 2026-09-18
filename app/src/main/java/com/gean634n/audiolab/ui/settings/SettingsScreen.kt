@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gean634n.audiolab.audio.AudioExecutionMode
-import com.gean634n.audiolab.audio.AudioSettings
 import com.gean634n.audiolab.settings.SettingsViewModel
 import com.gean634n.audiolab.ui.theme.OutlineColor
 import androidx.compose.foundation.Canvas
@@ -27,7 +26,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -44,19 +42,28 @@ fun SettingsScreen(
     modifier: Modifier = Modifier
 ) {
     val applied by viewModel.audioSettings.collectAsStateWithLifecycle()
+    val currentSettings = applied ?: return
 
-    var mode by rememberSaveable { mutableStateOf(applied.executionMode) }
-    var host by rememberSaveable { mutableStateOf(applied.computerHost) }
-    var port by rememberSaveable { mutableStateOf(applied.computerPort) }
+    var mode by rememberSaveable(currentSettings) {
+        mutableStateOf(currentSettings.executionMode)
+    }
 
-    val draft = applied.copy(
+    var host by rememberSaveable(currentSettings) {
+        mutableStateOf(currentSettings.computerHost)
+    }
+
+    var port by rememberSaveable(currentSettings) {
+        mutableStateOf(currentSettings.computerPort)
+    }
+
+    val draft = currentSettings.copy(
         executionMode = mode,
         computerHost = host,
         computerPort = port
     )
 
     val canApply =
-        draft != applied && (
+        draft != currentSettings && (
                 draft.executionMode == AudioExecutionMode.DEVICE || draft.isComputerConfigValid
         )
 

@@ -11,5 +11,10 @@ interface AudioTransport {
         value: String
     )
 
+    fun sendMessage(
+        receiver: String,
+        vararg args: Any
+    )
+
     fun close()
 }

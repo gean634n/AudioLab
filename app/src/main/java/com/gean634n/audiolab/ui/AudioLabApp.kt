@@ -100,7 +100,9 @@ fun AudioLabApp(
             }
 
             composable("drawing") {
-                DrawingScreen()
+                DrawingScreen(
+                    audioEngine = audioEngine
+                )
             }
 
             composable("settings") {

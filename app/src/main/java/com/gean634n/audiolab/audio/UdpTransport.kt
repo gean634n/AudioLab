@@ -10,6 +10,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.net.InetSocketAddress
 import kotlinx.coroutines.cancel
+import io.github.termtate.kotlinosc.arg.toOscInt32
 
 class UdpTransport(
     host: String,
@@ -47,6 +48,31 @@ class UdpTransport(
                 OscMessage(
                     address = receiver,
                     args = listOf(value.toOscString())
+                )
+            )
+        }
+    }
+
+    override fun sendMessage(
+        receiver: String,
+        vararg args: Any
+    ) {
+        val oscArgs = args.map { arg ->
+            when (arg) {
+                is Float -> arg.toOscFloat32()
+                is Int -> arg.toOscInt32()
+                is String -> arg.toOscString()
+                else -> error(
+                    "Unsupported OSC argument type: ${arg::class.simpleName}"
+                )
+            }
+        }
+
+        scope.launch {
+            client.send(
+                OscMessage(
+                    address = receiver,
+                    args = oscArgs
                 )
             )
         }

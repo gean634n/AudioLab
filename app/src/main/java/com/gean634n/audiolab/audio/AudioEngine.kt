@@ -194,4 +194,37 @@ class AudioEngine (
 
         transport.sendString("/audio/waveform", value)
     }
+
+    fun startDrawingStroke(
+        tool: String,
+        lineStyle: String,
+        red: Float,
+        green: Float,
+        blue: Float,
+    ) {
+        transport.sendMessage(
+            "/draw/start",
+            tool,
+            lineStyle,
+            red,
+            green,
+            blue,
+        )
+    }
+
+    fun sendDrawingPoint(
+        x: Float,
+        y: Float,
+    ) {
+        transport.sendMessage(
+            "/draw/point",
+            x,
+            y,
+        )
+    }
+
+    fun endDrawingStroke() {
+        transport.sendMessage("/draw/end")
+    }
+
 }

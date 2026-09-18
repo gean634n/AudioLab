@@ -21,6 +21,13 @@ class LibPdTransport : AudioTransport {
         PdBase.sendSymbol(receiver, value)
     }
 
+    override fun sendMessage(
+        receiver: String,
+        vararg args: Any
+    ) {
+        PdBase.sendList(receiver, *args)
+    }
+
     override fun close() {
         // Nada é necessário para liberar
     }

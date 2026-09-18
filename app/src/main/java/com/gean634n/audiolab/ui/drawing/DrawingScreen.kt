@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.gean634n.audiolab.audio.AudioEngine
 import com.gean634n.audiolab.drawing.DrawingColor
 import com.gean634n.audiolab.drawing.DrawingPlaybackController
 import com.gean634n.audiolab.drawing.DrawingTool
@@ -44,6 +45,7 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun DrawingScreen(
+    audioEngine: AudioEngine,
     modifier: Modifier = Modifier,
     viewModel: DrawingViewModel = viewModel()
 ) {

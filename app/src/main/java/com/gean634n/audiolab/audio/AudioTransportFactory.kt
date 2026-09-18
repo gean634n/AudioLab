@@ -2,16 +2,20 @@ package com.gean634n.audiolab.audio
 
 object AudioTransportFactory {
 
-    fun create(debugAvailable: Boolean): AudioTransport {
+    fun create(
+        settings: AudioSettings,
+        computerAvailable: Boolean
+    ): AudioTransport {
         return when {
-            AudioConfig.mode == AudioMode.DEBUG && debugAvailable ->
+            settings.executionMode == AudioExecutionMode.COMPUTER &&
+                    computerAvailable -> {
                 UdpTransport(
-                    host = AudioConfig.debugHost,
-                    port = AudioConfig.debugPort
+                    host = settings.computerHost,
+                    port = settings.computerPort.toInt()
                 )
+            }
 
-            else ->
-                LibPdTransport()
+            else -> LibPdTransport()
         }
     }
 }

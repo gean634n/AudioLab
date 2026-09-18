@@ -10,4 +10,6 @@ interface AudioTransport {
         receiver: String,
         value: String
     )
+
+    fun close()
 }

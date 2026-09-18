@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.net.InetSocketAddress
+import kotlinx.coroutines.cancel
 
 class UdpTransport(
     host: String,
@@ -51,7 +52,8 @@ class UdpTransport(
         }
     }
 
-    fun close() {
+    override fun close() {
+        scope.cancel()
         client.close()
     }
 }

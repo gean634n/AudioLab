@@ -20,4 +20,8 @@ class LibPdTransport : AudioTransport {
         Log.d("AudioDebug", "libpd string: $receiver = $value")
         PdBase.sendSymbol(receiver, value)
     }
+
+    override fun close() {
+        // Nada é necessário para liberar
+    }
 }

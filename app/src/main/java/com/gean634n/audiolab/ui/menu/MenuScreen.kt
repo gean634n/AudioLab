@@ -13,9 +13,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.Alignment
+import com.gean634n.audiolab.ui.drawing.SketchButton
+import com.gean634n.audiolab.ui.theme.OutlineColor
 
 private data class MenuItem(
     val title: String,
@@ -86,15 +89,16 @@ fun MenuScreen(
             }
         }
 
-        IconButton(
+        SketchButton(
             onClick = onOpenSettings,
             modifier = Modifier
                 .align(Alignment.TopEnd)
                 .padding(16.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Settings,
-                contentDescription = "Configurações"
+                imageVector = Icons.Rounded.Settings,
+                contentDescription = "Configurações",
+                tint = OutlineColor
             )
         }
     }

@@ -9,10 +9,12 @@ import android.media.AudioManager
 import com.gean634n.audiolab.ui.waveform.WaveformType
 import android.util.Log
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlin.text.toInt
 
 class AudioEngine (
     private val context: Context
@@ -20,9 +22,16 @@ class AudioEngine (
     @Volatile
     private var transport: AudioTransport = LibPdTransport()
 
-    private val _state = MutableStateFlow(SynthState())
+    @Volatile
+    private var settings = AudioSettings()
 
+    private val transportSelectionVersion = AtomicLong(0)
+
+    private val _state = MutableStateFlow(SynthState())
     val state: StateFlow<SynthState> = _state.asStateFlow()
+
+    private val _executionState = MutableStateFlow(AudioExecutionState.DEVICE)
+    val executionState: StateFlow<AudioExecutionState> = _executionState.asStateFlow()
 
     fun start() {
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -44,38 +53,69 @@ class AudioEngine (
         PdBase.openPatch(patchFile)
 
         PdAudio.startAudio(context)
-        selectTransport()
+        selectTransport(settings)
     }
 
-    private fun selectTransport() {
-        if (AudioConfig.mode == AudioMode.NORMAL) {
-            transport = AudioTransportFactory.create(
-                debugAvailable = false
+    private fun replaceTransport(newTransport: AudioTransport) {
+        val oldTransport = transport
+        transport = newTransport
+        oldTransport.close()
+    }
+
+    private fun selectTransport(settings: AudioSettings) {
+        val selectionVersion = transportSelectionVersion.incrementAndGet()
+
+        if (settings.executionMode == AudioExecutionMode.DEVICE) {
+
+            replaceTransport(
+                AudioTransportFactory.create(
+                    settings = settings,
+                    computerAvailable = false
+                )
             )
+
+            _executionState.value = AudioExecutionState.DEVICE
 
             Log.d("AudioDebug", "Transport: LOCAL")
             return
         }
 
+        _executionState.value = AudioExecutionState.COMPUTER_CONNECTING
+
         val executor = Executors.newSingleThreadExecutor()
 
         executor.execute {
             val handshake = UdpHandshake(
-                host = AudioConfig.debugHost,
-                sendPort = AudioConfig.debugPort,
-                replyPort = AudioConfig.debugReplyPort,
-                timeoutMillis = AudioConfig.handshakeTimeoutMillis
+                host = settings.computerHost,
+                sendPort = settings.computerPort.toInt(),
+                replyPort = settings.replyPort.toInt(),
+                timeoutMillis = 500
             )
 
-            val debugAvailable = handshake.check()
+            val computerAvailable = handshake.check()
 
-            transport = AudioTransportFactory.create(
-                debugAvailable = debugAvailable
+            if (selectionVersion != transportSelectionVersion.get()) {
+                executor.shutdown()
+                return@execute
+            }
+
+            replaceTransport(
+                AudioTransportFactory.create(
+                    settings = settings,
+                    computerAvailable = computerAvailable
+                )
             )
+
+            _executionState.value =
+                if (computerAvailable) {
+                    AudioExecutionState.COMPUTER
+                } else {
+                    AudioExecutionState.COMPUTER_UNAVAILABLE
+                }
 
             Log.d(
                 "AudioDebug",
-                if (debugAvailable) {
+                if (computerAvailable) {
                     "Transport: UDP"
                 } else {
                     "Transport: LOCAL"
@@ -86,7 +126,25 @@ class AudioEngine (
         }
     }
 
+    fun applySettings(newSettings: AudioSettings) {
+        if (newSettings == settings) {
+            return
+        }
+
+        settings = newSettings
+        selectTransport(newSettings)
+    }
+
+    fun retryComputerConnection() {
+        if (settings.executionMode != AudioExecutionMode.COMPUTER) {
+            return
+        }
+
+        selectTransport(settings)
+    }
+
     fun stop() {
+        transport.close()
         PdAudio.release()
     }
 

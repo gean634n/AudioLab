@@ -35,6 +35,13 @@ fun DrawingCanvas(
     playbackController: DrawingPlaybackController,
     playbackAnimationMode: PlaybackAnimationMode,
     isPlaying: Boolean,
+    onStrokeStarted: (
+        DrawingTool,
+        LineStyle,
+        DrawingColor
+    ) -> Unit,
+    onPointAdded: (Float, Float, Long) -> Unit,
+    onStrokeEnded: () -> Unit,
     onStrokeFinished: (Stroke) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -54,19 +61,41 @@ fun DrawingCanvas(
                     val down = awaitFirstDown()
 
                     val points = mutableListOf<StrokePoint>()
+                    var strokeStartTime: Long? = null
+
+                    onStrokeStarted(
+                        selectedTool,
+                        selectedLineStyle,
+                        selectedColor
+                    )
 
                     fun addPoint(position: Offset) {
-                        val normalizedX = (position.x / size.width).coerceIn(0f, 1f)
+                        val normalizedX =
+                            (position.x / size.width).coerceIn(0f, 1f)
 
-                        val normalizedY = (position.y / size.height).coerceIn(0f, 1f)
+                        val normalizedY =
+                            (position.y / size.height).coerceIn(0f, 1f)
+
+                        val now = SystemClock.uptimeMillis()
+
+                        if (strokeStartTime == null) {
+                            strokeStartTime = now
+                        }
 
                         val point = StrokePoint(
                             x = normalizedX,
                             y = normalizedY,
-                            timeMillis = SystemClock.uptimeMillis()
+                            timeMillis = now
                         )
+
                         points += point
                         currentPoints = points.toList()
+
+                        onPointAdded(
+                            point.x,
+                            point.y,
+                            now - strokeStartTime!!
+                        )
                     }
 
                     addPoint(down.position)
@@ -92,6 +121,8 @@ fun DrawingCanvas(
                             )
                         )
                     }
+
+                    onStrokeEnded()
 
                     currentPoints = emptyList()
                 }

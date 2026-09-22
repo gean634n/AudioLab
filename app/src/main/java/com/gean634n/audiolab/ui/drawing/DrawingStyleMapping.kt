@@ -18,6 +18,16 @@ fun DrawingColor.toComposeColor(): Color = when (this) {
     DrawingColor.GREEN -> DrawingInkGreen
 }
 
+fun DrawingColor.toNormalizedRgb(): Triple<Float, Float, Float> {
+    val color = toComposeColor()
+
+    return Triple(
+        color.red,
+        color.green,
+        color.blue
+    )
+}
+
 fun LineStyle.toPathEffect(previewScale: Float = 1f): PathEffect? = when (this) {
     LineStyle.SOLID -> null
 

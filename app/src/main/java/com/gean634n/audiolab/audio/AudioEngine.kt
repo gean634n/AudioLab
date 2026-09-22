@@ -215,11 +215,13 @@ class AudioEngine (
     fun sendDrawingPoint(
         x: Float,
         y: Float,
+        elapsedMillis: Long,
     ) {
         transport.sendMessage(
             "/draw/point",
             x,
             y,
+            elapsedMillis.toFloat(),
         )
     }
 

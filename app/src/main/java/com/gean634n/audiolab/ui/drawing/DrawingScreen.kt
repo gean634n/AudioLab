@@ -245,6 +245,27 @@ fun DrawingScreen(
                     playbackController = playbackController,
                     playbackAnimationMode = viewModel.state.playbackAnimationMode,
                     isPlaying = isPlaying,
+                    onStrokeStarted = { tool, lineStyle, color ->
+                        val (red, green, blue) = color.toNormalizedRgb()
+
+                        audioEngine.startDrawingStroke(
+                            tool = tool.name.lowercase(),
+                            lineStyle = lineStyle.name.lowercase(),
+                            red = red,
+                            green = green,
+                            blue = blue,
+                        )
+                    },
+                    onPointAdded = { x, y, elapsedMillis ->
+                        audioEngine.sendDrawingPoint(
+                            x = x,
+                            y = y,
+                            elapsedMillis = elapsedMillis,
+                        )
+                    },
+                    onStrokeEnded = {
+                        audioEngine.endDrawingStroke()
+                    },
                     onStrokeFinished = viewModel::addStroke,
                     modifier = Modifier.fillMaxSize()
                 )

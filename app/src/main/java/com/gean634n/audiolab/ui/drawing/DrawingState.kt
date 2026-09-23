@@ -16,8 +16,9 @@ data class DrawingState(
     val playbackAnimationMode: PlaybackAnimationMode =
         PlaybackAnimationMode.BLINK_REPLAY_TIMING,
 
+    val playbackDurationMillis: Long = 8_000L,
+
     // val playingStrokeIndex: Int? = null,
     val isPlaying: Boolean = false,
-
     val isPaused: Boolean = false
 )

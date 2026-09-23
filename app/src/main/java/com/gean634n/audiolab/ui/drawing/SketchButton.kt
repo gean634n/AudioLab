@@ -51,23 +51,23 @@ fun SketchButton(
     )
 }
 
-@Composable
-fun SketchButton(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    backgroundColor: Color = Color.Transparent,
-    enabled: Boolean = true
-) {
-    SketchButton(
-        onClick = onClick,
-        modifier = modifier,
-        backgroundColor = backgroundColor,
-        enabled = enabled
-    ) {
-        Text(
-            text = text,
-            color = Color(0xFF1E1E1E)
-        )
-    }
-}
+//@Composable
+//fun SketchButton(
+//    text: String,
+//    onClick: () -> Unit,
+//    modifier: Modifier = Modifier,
+//    backgroundColor: Color = Color.Transparent,
+//    enabled: Boolean = true
+//) {
+//    SketchButton(
+//        onClick = onClick,
+//        modifier = modifier,
+//        backgroundColor = backgroundColor,
+//        enabled = enabled
+//    ) {
+//        Text(
+//            text = text,
+//            color = Color(0xFF1E1E1E)
+//        )
+//    }
+//}

@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.gean634n.audiolab.drawing.DrawingColor
 import com.gean634n.audiolab.drawing.DrawingTool
 import com.gean634n.audiolab.drawing.LineStyle
+import com.gean634n.audiolab.drawing.PlaybackAnimationMode
 import com.gean634n.audiolab.drawing.Stroke
 import com.gean634n.audiolab.drawing.StrokeMetrics
 import com.gean634n.audiolab.drawing.calculateMetrics
@@ -84,6 +85,18 @@ class DrawingViewModel : ViewModel() {
     fun selectColor(color: DrawingColor) {
         state = state.copy(
             selectedColor = color
+        )
+    }
+
+    fun selectPlaybackAnimationMode(mode: PlaybackAnimationMode) {
+        state = state.copy(
+            playbackAnimationMode = mode
+        )
+    }
+
+    fun setPlaybackDurationMillis(durationMillis: Long) {
+        state = state.copy(
+            playbackDurationMillis = durationMillis
         )
     }
 

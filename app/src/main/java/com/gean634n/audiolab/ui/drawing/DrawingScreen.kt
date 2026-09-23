@@ -16,18 +16,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Redo
 import androidx.compose.material.icons.automirrored.rounded.Undo
+import androidx.compose.material.icons.rounded.AccessTime
 import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.FileDownload
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Stop
+import androidx.compose.material.icons.rounded.Tune
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -41,7 +45,11 @@ import com.gean634n.audiolab.drawing.DrawingColor
 import com.gean634n.audiolab.drawing.DrawingPlaybackController
 import com.gean634n.audiolab.drawing.DrawingTool
 import com.gean634n.audiolab.drawing.LineStyle
+import com.gean634n.audiolab.drawing.PlaybackAnimationMode
 import kotlinx.coroutines.delay
+import android.content.pm.ActivityInfo
+import androidx.compose.runtime.DisposableEffect
+import androidx.activity.compose.LocalActivity
 
 @Composable
 fun DrawingScreen(
@@ -49,16 +57,37 @@ fun DrawingScreen(
     modifier: Modifier = Modifier,
     viewModel: DrawingViewModel = viewModel()
 ) {
+    val activity = LocalActivity.current
+
+    DisposableEffect(activity) {
+        activity?.requestedOrientation =
+            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+
+        onDispose {
+            activity?.requestedOrientation =
+                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        }
+    }
 
     val isPlaying = viewModel.state.isPlaying
     val isPaused = viewModel.state.isPaused
 
-    val playbackController = remember {
-        DrawingPlaybackController()
+    val playbackController = remember(viewModel.state.playbackDurationMillis) {
+        DrawingPlaybackController(
+            durationMillis = viewModel.state.playbackDurationMillis
+        )
     }
 
     var playbackElapsedMillis by remember {
         mutableLongStateOf(0L)
+    }
+
+    var durationMenuExpanded by remember {
+        mutableStateOf(false)
+    }
+
+    var modeMenuExpanded by remember {
+        mutableStateOf(false)
     }
 
     val playheadX = playbackController.playheadX(
@@ -66,6 +95,11 @@ fun DrawingScreen(
     )
 
     val playbackStrokes = viewModel.playbackStrokes
+
+    val playbackEndMillis = playbackController.playbackEndMillis(
+        strokes = viewModel.state.strokes,
+        mode = viewModel.state.playbackAnimationMode
+    )
 
     LaunchedEffect(isPlaying, isPaused) {
         if (!isPlaying) {
@@ -77,9 +111,8 @@ fun DrawingScreen(
             return@LaunchedEffect
         }
 
-        while (!playbackController.isFinished(playbackElapsedMillis)) {
+        while (playbackElapsedMillis < playbackEndMillis) {
             delay(16L)
-
             playbackElapsedMillis += 16L
         }
 
@@ -157,6 +190,99 @@ fun DrawingScreen(
                         tint = Color.White
                     )
                 }
+                Box {
+                    SketchButton(
+                        onClick = {
+                            durationMenuExpanded = true
+                        },
+                        backgroundColor = Color.White,
+                        enabled = !isPlaying
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.AccessTime,
+                            contentDescription =
+                                "Duration: ${viewModel.state.playbackDurationMillis / 1_000} seconds",
+                            tint = Color(0xFF1E1E1E)
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = durationMenuExpanded,
+                        onDismissRequest = {
+                            durationMenuExpanded = false
+                        }
+                    ) {
+                        listOf(
+                            1_000L,
+                            2_000L,
+                            4_000L,
+                            6_000L,
+                            8_000L,
+                            12_000L,
+                            14_000L,
+                            16_000L
+                        ).forEach { durationMillis ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text("${durationMillis / 1_000} s")
+                                },
+                                onClick = {
+                                    viewModel.setPlaybackDurationMillis(durationMillis)
+                                    durationMenuExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Box {
+                    SketchButton(
+                        onClick = {
+                            modeMenuExpanded = true
+                        },
+                        backgroundColor = Color.White,
+                        enabled = !isPlaying
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Tune,
+                            contentDescription = "Playback mode",
+                            tint = Color(0xFF1E1E1E)
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = modeMenuExpanded,
+                        onDismissRequest = {
+                            modeMenuExpanded = false
+                        }
+                    ) {
+                        PlaybackAnimationMode.entries.forEach { mode ->
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        when (mode) {
+                                            PlaybackAnimationMode.HIDE_ALL_SHOW_FULL ->
+                                                "Show full"
+
+                                            PlaybackAnimationMode.HIDE_ALL_REPLAY_TIMING ->
+                                                "Replay timing"
+
+                                            PlaybackAnimationMode.BLINK_FULL ->
+                                                "Blink full"
+
+                                            PlaybackAnimationMode.BLINK_REPLAY_TIMING ->
+                                                "Blink replay"
+                                        }
+                                    )
+                                },
+                                onClick = {
+                                    viewModel.selectPlaybackAnimationMode(mode)
+                                    modeMenuExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
             }
 
             // Actions Group
@@ -187,7 +313,7 @@ fun DrawingScreen(
                     .width(80.dp)
                     .fillMaxHeight()
                     .padding(end = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
                 // Tools Section
                 SidebarSection {
@@ -322,9 +448,9 @@ private fun SidebarSection(
                 shape = RoundedCornerShape(20.dp)
             )
             .background(Color.White, RoundedCornerShape(20.dp))
-            .padding(vertical = 12.dp),
+            .padding(vertical = 8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
         content = content
     )
 }

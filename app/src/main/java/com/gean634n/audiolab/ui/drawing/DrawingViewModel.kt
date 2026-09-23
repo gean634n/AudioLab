@@ -13,6 +13,8 @@ import com.gean634n.audiolab.drawing.calculateMetrics
 
 class DrawingViewModel : ViewModel() {
 
+    private var nextStrokeId = 1
+
     var state by mutableStateOf(DrawingState())
         private set
 
@@ -29,6 +31,8 @@ class DrawingViewModel : ViewModel() {
         get() = state.strokes.sortedBy { stroke ->
             stroke.points.firstOrNull()?.x ?: 0f
         }
+
+    fun createStrokeId(): Int = nextStrokeId++
 
     fun addStroke(stroke: Stroke) {
         lastStrokeMetrics = stroke.calculateMetrics()

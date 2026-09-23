@@ -196,6 +196,7 @@ class AudioEngine (
     }
 
     fun startDrawingStroke(
+        id: Int,
         tool: String,
         lineStyle: String,
         red: Float,
@@ -204,6 +205,7 @@ class AudioEngine (
     ) {
         transport.sendMessage(
             "/draw/start",
+            id,
             tool,
             lineStyle,
             red,
@@ -213,20 +215,25 @@ class AudioEngine (
     }
 
     fun sendDrawingPoint(
+        id: Int,
         x: Float,
         y: Float,
         elapsedMillis: Long,
     ) {
         transport.sendMessage(
             "/draw/point",
+            id,
             x,
             y,
             elapsedMillis.toFloat(),
         )
     }
 
-    fun endDrawingStroke() {
-        transport.sendMessage("/draw/end")
+    fun endDrawingStroke(id: Int) {
+        transport.sendMessage(
+            "/draw/end",
+            id,
+        )
     }
 
 }

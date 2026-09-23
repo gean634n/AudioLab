@@ -7,6 +7,7 @@ data class StrokePoint(
 )
 
 data class Stroke(
+    val id: Int,
     val points: List<StrokePoint>,
     val tool: DrawingTool,
     val lineStyle: LineStyle,

@@ -35,13 +35,15 @@ fun DrawingCanvas(
     playbackController: DrawingPlaybackController,
     playbackAnimationMode: PlaybackAnimationMode,
     isPlaying: Boolean,
+    createStrokeId: () -> Int,
     onStrokeStarted: (
+        Int,
         DrawingTool,
         LineStyle,
         DrawingColor
     ) -> Unit,
-    onPointAdded: (Float, Float, Long) -> Unit,
-    onStrokeEnded: () -> Unit,
+    onPointAdded: (Int, Float, Float, Long) -> Unit,
+    onStrokeEnded: (Int) -> Unit,
     onStrokeFinished: (Stroke) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -60,10 +62,12 @@ fun DrawingCanvas(
                 awaitEachGesture {
                     val down = awaitFirstDown()
 
+                    val strokeId = createStrokeId()
                     val points = mutableListOf<StrokePoint>()
                     var strokeStartTime: Long? = null
 
                     onStrokeStarted(
+                        strokeId,
                         selectedTool,
                         selectedLineStyle,
                         selectedColor
@@ -92,6 +96,7 @@ fun DrawingCanvas(
                         currentPoints = points.toList()
 
                         onPointAdded(
+                            strokeId,
                             point.x,
                             point.y,
                             now - strokeStartTime!!
@@ -114,6 +119,7 @@ fun DrawingCanvas(
                     if (points.isNotEmpty()) {
                         onStrokeFinished(
                             Stroke(
+                                id = strokeId,
                                 points = points,
                                 tool = selectedTool,
                                 lineStyle = selectedLineStyle,
@@ -122,7 +128,7 @@ fun DrawingCanvas(
                         )
                     }
 
-                    onStrokeEnded()
+                    onStrokeEnded(strokeId)
 
                     currentPoints = emptyList()
                 }

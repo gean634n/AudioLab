@@ -238,4 +238,64 @@ class AudioEngine (
         )
     }
 
+    fun playStart(durationMillis: Int, mode: String) {
+        transport.sendMessage("/play/start", durationMillis, mode)
+    }
+
+    fun playStroke(
+        voice: Int,
+        id: Int,
+        tool: String,
+        lineStyle: String,
+        red: Float,
+        green: Float,
+        blue: Float
+    ) {
+        transport.sendMessage(
+            "/play/v$voice/stroke",
+            id,
+            tool,
+            lineStyle,
+            red,
+            green,
+            blue,
+        )
+    }
+
+    fun playPoint(
+        voice: Int,
+        id: Int,
+        x: Float,
+        y: Float,
+        timeMillis: Float
+    ) {
+        transport.sendMessage(
+            "/play/v$voice/point",
+            id,
+            x,
+            y,
+            timeMillis,
+        )
+    }
+
+    fun playEnd(voice: Int, id: Int) {
+        transport.sendMessage("/play/v$voice/end", id)
+    }
+
+    fun playPause() {
+        transport.sendMessage("/play/pause")
+    }
+
+    fun playResume() {
+        transport.sendMessage("/play/resume")
+    }
+
+    fun playFinish() {
+        transport.sendMessage("/play/finish")
+    }
+
+    fun playAbort() {
+        transport.sendMessage("/play/abort")
+    }
+
 }

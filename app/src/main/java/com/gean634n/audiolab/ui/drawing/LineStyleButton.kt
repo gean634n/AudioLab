@@ -13,11 +13,13 @@ fun LineStyleButton(
     lineStyle: LineStyle,
     selected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     SelectableSwatch(
         selected = selected,
         onClick = onClick,
+        enabled = enabled,
         modifier = modifier
     ) {
         val pathEffect = lineStyle.toPathEffect(previewScale = 0.5f)

@@ -12,13 +12,15 @@ fun DrawingColorButton(
     drawingColor: DrawingColor,
     selected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     val color = drawingColor.toComposeColor()
 
     SelectableSwatch(
         selected = false,
         onClick = onClick,
+        enabled = enabled,
         modifier = modifier
     ) {
         Canvas(modifier = Modifier.size(32.dp)) {

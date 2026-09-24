@@ -189,7 +189,7 @@ fun DrawingScreen(
                     }
 
                     DropdownMenu(
-                        expanded = durationMenuExpanded,
+                        expanded = durationMenuExpanded && !isPlaying,
                         onDismissRequest = {
                             durationMenuExpanded = false
                         }
@@ -205,6 +205,7 @@ fun DrawingScreen(
                             16_000L
                         ).forEach { durationMillis ->
                             DropdownMenuItem(
+                                enabled = !isPlaying,
                                 text = {
                                     Text("${durationMillis / 1_000} s")
                                 },
@@ -233,13 +234,14 @@ fun DrawingScreen(
                     }
 
                     DropdownMenu(
-                        expanded = modeMenuExpanded,
+                        expanded = modeMenuExpanded && !isPlaying,
                         onDismissRequest = {
                             modeMenuExpanded = false
                         }
                     ) {
                         PlaybackAnimationMode.entries.forEach { mode ->
                             DropdownMenuItem(
+                                enabled = !isPlaying,
                                 text = {
                                     Text(
                                         when (mode) {
@@ -275,7 +277,7 @@ fun DrawingScreen(
                 SketchButton(onClick = viewModel::redo, enabled = viewModel.canRedo) {
                     Icon(Icons.AutoMirrored.Rounded.Redo, "Redo")
                 }
-                SketchButton(onClick = viewModel::clear, enabled = viewModel.state.strokes.isNotEmpty()) {
+                SketchButton(onClick = viewModel::clear, enabled = !isPlaying && viewModel.state.strokes.isNotEmpty()) {
                     Icon(Icons.Rounded.DeleteOutline, "Clear")
                 }
                 SketchButton(onClick = { /* TODO: Download */ }) {
@@ -303,6 +305,7 @@ fun DrawingScreen(
                         DrawingToolButton(
                             tool = tool,
                             selected = tool == viewModel.state.selectedTool,
+                            enabled = !isPlaying,
                             onClick = { viewModel.selectTool(tool) }
                         )
                     }
@@ -314,6 +317,7 @@ fun DrawingScreen(
                         LineStyleButton(
                             lineStyle = style,
                             selected = style == viewModel.state.selectedLineStyle,
+                            enabled = !isPlaying,
                             onClick = { viewModel.selectLineStyle(style) }
                         )
                     }
@@ -325,6 +329,7 @@ fun DrawingScreen(
                         DrawingColorButton(
                             drawingColor = color,
                             selected = color == viewModel.state.selectedColor,
+                            enabled = !isPlaying,
                             onClick = { viewModel.selectColor(color) }
                         )
                     }
@@ -354,7 +359,8 @@ fun DrawingScreen(
                     playbackAnimationMode = viewModel.state.playbackAnimationMode,
                     isPlaying = isPlaying,
                     createStrokeId = viewModel::createStrokeId,
-                    onStrokeStarted = { id, tool, lineStyle, color ->
+                    onStrokeStarted = strokeStarted@{ id, tool, lineStyle, color ->
+                        if (viewModel.state.isPlaying) return@strokeStarted
                         val (red, green, blue) = color.toNormalizedRgb()
 
                         audioEngine.startDrawingStroke(
@@ -366,7 +372,8 @@ fun DrawingScreen(
                             blue = blue,
                         )
                     },
-                    onPointAdded = { id, x, y, elapsedMillis ->
+                    onPointAdded = pointAdded@{ id, x, y, elapsedMillis ->
+                        if (viewModel.state.isPlaying) return@pointAdded
                         audioEngine.sendDrawingPoint(
                             id = id,
                             x = x,
@@ -374,7 +381,8 @@ fun DrawingScreen(
                             elapsedMillis = elapsedMillis,
                         )
                     },
-                    onStrokeEnded = { id ->
+                    onStrokeEnded = strokeEnded@{ id ->
+                        if (viewModel.state.isPlaying) return@strokeEnded
                         audioEngine.endDrawingStroke(id)
                     },
                     onStrokeFinished = viewModel::addStroke,

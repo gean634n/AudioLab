@@ -68,10 +68,10 @@ class DrawingViewModel : ViewModel() {
         private set
 
     val canUndo: Boolean
-        get() = state.strokes.isNotEmpty()
+        get() = !state.isPlaying && state.strokes.isNotEmpty()
 
     val canRedo: Boolean
-        get() = state.undoneStrokes.isNotEmpty()
+        get() = !state.isPlaying && state.undoneStrokes.isNotEmpty()
 
     val playbackStrokes: List<Stroke>
         get() = state.strokes.sortedBy { stroke ->
@@ -81,6 +81,8 @@ class DrawingViewModel : ViewModel() {
     fun createStrokeId(): Int = nextStrokeId++
 
     fun addStroke(stroke: Stroke) {
+        if (state.isPlaying) return
+
         lastStrokeMetrics = stroke.calculateMetrics()
 
         state = state.copy(
@@ -90,6 +92,8 @@ class DrawingViewModel : ViewModel() {
     }
 
     fun undo() {
+        if (state.isPlaying) return
+
         if (state.strokes.isEmpty()) return
 
         val stroke = state.strokes.last()
@@ -101,6 +105,8 @@ class DrawingViewModel : ViewModel() {
     }
 
     fun redo() {
+        if (state.isPlaying) return
+
         if (state.undoneStrokes.isEmpty()) return
 
         val stroke = state.undoneStrokes.last()
@@ -112,34 +118,46 @@ class DrawingViewModel : ViewModel() {
     }
 
     fun clear() {
+        if (state.isPlaying) return
+
         state = DrawingState()
     }
 
     fun selectTool(tool: DrawingTool) {
+        if (state.isPlaying) return
+
         state = state.copy(
             selectedTool = tool
         )
     }
 
     fun selectLineStyle(lineStyle: LineStyle) {
+        if (state.isPlaying) return
+
         state = state.copy(
             selectedLineStyle = lineStyle
         )
     }
 
     fun selectColor(color: DrawingColor) {
+        if (state.isPlaying) return
+
         state = state.copy(
             selectedColor = color
         )
     }
 
     fun selectPlaybackAnimationMode(mode: PlaybackAnimationMode) {
+        if (state.isPlaying) return
+
         state = state.copy(
             playbackAnimationMode = mode
         )
     }
 
     fun setPlaybackDurationMillis(durationMillis: Long) {
+        if (state.isPlaying) return
+
         state = state.copy(
             playbackDurationMillis = durationMillis
         )

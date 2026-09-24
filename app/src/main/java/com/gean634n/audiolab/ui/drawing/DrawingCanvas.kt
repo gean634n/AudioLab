@@ -47,7 +47,7 @@ fun DrawingCanvas(
     onStrokeFinished: (Stroke) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var currentPoints by remember {
+    var currentPoints by remember(isPlaying) {
         mutableStateOf<List<StrokePoint>>(emptyList())
     }
 
@@ -57,8 +57,11 @@ fun DrawingCanvas(
             .pointerInput(
                 selectedTool,
                 selectedLineStyle,
-                selectedColor
+                selectedColor,
+                isPlaying
             )  {
+                if (isPlaying) return@pointerInput
+
                 awaitEachGesture {
                     val down = awaitFirstDown()
 

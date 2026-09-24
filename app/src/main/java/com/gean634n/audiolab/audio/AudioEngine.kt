@@ -29,6 +29,8 @@ class AudioEngine (
 
     private val transportSelectionVersion = AtomicLong(0)
 
+    private var patchHandle: Int? = null
+
     private val _state = MutableStateFlow(SynthState())
     val state: StateFlow<SynthState> = _state.asStateFlow()
 
@@ -55,7 +57,7 @@ class AudioEngine (
 
         val patchFile = copyPatchToInternalStorage()
 
-        PdBase.openPatch(patchFile)
+        patchHandle = PdBase.openPatch(patchFile)
 
         PdAudio.startAudio(context)
         selectTransport(settings)
@@ -163,6 +165,12 @@ class AudioEngine (
         val old = transport
         transport = NoopTransport
         old.close()
+
+        patchHandle?.let { handle ->
+            PdBase.closePatch(handle)
+            patchHandle = null
+        }
+
         PdAudio.release()
     }
 

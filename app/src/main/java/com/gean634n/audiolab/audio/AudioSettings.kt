@@ -2,7 +2,7 @@ package com.gean634n.audiolab.audio
 
 data class AudioSettings(
     val executionMode: AudioExecutionMode = AudioExecutionMode.DEVICE,
-    val computerHost: String = "10.42.0.1",
+    val computerHost: String = "192.168.0.7",
     val computerPort: String = "9000",
     val replyPort: String = "9001"
 ) {

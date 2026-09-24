@@ -29,6 +29,8 @@ class AudioEngine (
 
     private val transportSelectionVersion = AtomicLong(0)
 
+    private var patchHandle: Int? = null
+
     private val _state = MutableStateFlow(SynthState())
     val state: StateFlow<SynthState> = _state.asStateFlow()
 
@@ -55,7 +57,7 @@ class AudioEngine (
 
         val patchFile = copyPatchToInternalStorage()
 
-        PdBase.openPatch(patchFile)
+        patchHandle = PdBase.openPatch(patchFile)
 
         PdAudio.startAudio(context)
         selectTransport(settings)
@@ -67,6 +69,7 @@ class AudioEngine (
         oldTransport.close()
     }
 
+    @Synchronized
     private fun selectTransport(settings: AudioSettings) {
         val selectionVersion = transportSelectionVersion.incrementAndGet()
 
@@ -99,33 +102,36 @@ class AudioEngine (
 
             val computerAvailable = handshake.check()
 
-            if (selectionVersion != transportSelectionVersion.get()) {
-                executor.shutdown()
-                return@execute
-            }
+            // Keep version validation and installation atomic with stop().
+            synchronized(this@AudioEngine) {
+                if (selectionVersion != transportSelectionVersion.get()) {
+                    executor.shutdown()
+                    return@execute
+                }
 
-            replaceTransport(
-                AudioTransportFactory.create(
-                    settings = settings,
-                    computerAvailable = computerAvailable
+                replaceTransport(
+                    AudioTransportFactory.create(
+                        settings = settings,
+                        computerAvailable = computerAvailable
+                    )
                 )
-            )
 
-            _executionState.value =
-                if (computerAvailable) {
-                    AudioExecutionState.COMPUTER
-                } else {
-                    AudioExecutionState.COMPUTER_UNAVAILABLE
-                }
+                _executionState.value =
+                    if (computerAvailable) {
+                        AudioExecutionState.COMPUTER
+                    } else {
+                        AudioExecutionState.COMPUTER_UNAVAILABLE
+                    }
 
-            Log.d(
-                "AudioDebug",
-                if (computerAvailable) {
-                    "Transport: UDP"
-                } else {
-                    "Transport: LOCAL"
-                }
-            )
+                Log.d(
+                    "AudioDebug",
+                    if (computerAvailable) {
+                        "Transport: UDP"
+                    } else {
+                        "Transport: LOCAL"
+                    }
+                )
+            }
 
             executor.shutdown()
         }
@@ -148,11 +154,23 @@ class AudioEngine (
         selectTransport(settings)
     }
 
-    // TODO: Revisar o ciclo de vida do transporte.
-    //  Após close(), transport ainda referencia o objeto fechado.
-    //  Tratar corretamente o ciclo onStop -> onStart.
+    // TODO: Define background audio policy.
+    //  Volume and TouchPad currently keep producing audio while the app is
+    //  in the background. Decide whether AudioEngine should stop or mute
+    //  globally when the app leaves the foreground.
+    @Synchronized
     fun stop() {
-        transport.close()
+        transportSelectionVersion.incrementAndGet()
+        playAbort()
+        val old = transport
+        transport = NoopTransport
+        old.close()
+
+        patchHandle?.let { handle ->
+            PdBase.closePatch(handle)
+            patchHandle = null
+        }
+
         PdAudio.release()
     }
 
@@ -236,6 +254,66 @@ class AudioEngine (
             "/draw/end",
             id,
         )
+    }
+
+    fun playStart(durationMillis: Int, mode: String) {
+        transport.sendMessage("/play/start", durationMillis, mode)
+    }
+
+    fun playStroke(
+        voice: Int,
+        id: Int,
+        tool: String,
+        lineStyle: String,
+        red: Float,
+        green: Float,
+        blue: Float
+    ) {
+        transport.sendMessage(
+            "/play/v$voice/stroke",
+            id,
+            tool,
+            lineStyle,
+            red,
+            green,
+            blue,
+        )
+    }
+
+    fun playPoint(
+        voice: Int,
+        id: Int,
+        x: Float,
+        y: Float,
+        timeMillis: Float
+    ) {
+        transport.sendMessage(
+            "/play/v$voice/point",
+            id,
+            x,
+            y,
+            timeMillis,
+        )
+    }
+
+    fun playEnd(voice: Int, id: Int) {
+        transport.sendMessage("/play/v$voice/end", id)
+    }
+
+    fun playPause() {
+        transport.sendMessage("/play/pause")
+    }
+
+    fun playResume() {
+        transport.sendMessage("/play/resume")
+    }
+
+    fun playFinish() {
+        transport.sendMessage("/play/finish")
+    }
+
+    fun playAbort() {
+        transport.sendMessage("/play/abort")
     }
 
 }

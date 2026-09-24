@@ -28,9 +28,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,14 +37,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.gean634n.audiolab.ui.audioEngineViewModelFactory
 import com.gean634n.audiolab.audio.AudioEngine
 import com.gean634n.audiolab.drawing.DrawingColor
 import com.gean634n.audiolab.drawing.DrawingPlaybackController
 import com.gean634n.audiolab.drawing.DrawingTool
 import com.gean634n.audiolab.drawing.LineStyle
 import com.gean634n.audiolab.drawing.PlaybackAnimationMode
-import kotlinx.coroutines.delay
 import android.content.pm.ActivityInfo
 import androidx.compose.runtime.DisposableEffect
 import androidx.activity.compose.LocalActivity
@@ -55,8 +55,23 @@ import androidx.activity.compose.LocalActivity
 fun DrawingScreen(
     audioEngine: AudioEngine,
     modifier: Modifier = Modifier,
-    viewModel: DrawingViewModel = viewModel()
+    viewModel: DrawingViewModel = viewModel(
+        factory = audioEngineViewModelFactory(audioEngine)
+    )
 ) {
+    val sink = remember(audioEngine) {
+        AudioEngineDrawingSink(audioEngine)
+    }
+
+    DisposableEffect(viewModel, sink) {
+        viewModel.bindSink(sink)
+        onDispose { }
+    }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
+        viewModel.stop()
+    }
+
     val activity = LocalActivity.current
 
     DisposableEffect(activity) {
@@ -78,10 +93,6 @@ fun DrawingScreen(
         )
     }
 
-    var playbackElapsedMillis by remember {
-        mutableLongStateOf(0L)
-    }
-
     var durationMenuExpanded by remember {
         mutableStateOf(false)
     }
@@ -91,33 +102,10 @@ fun DrawingScreen(
     }
 
     val playheadX = playbackController.playheadX(
-        elapsedMillis = playbackElapsedMillis
+        elapsedMillis = viewModel.playbackElapsedMillis
     )
 
     val playbackStrokes = viewModel.playbackStrokes
-
-    val playbackEndMillis = playbackController.playbackEndMillis(
-        strokes = viewModel.state.strokes,
-        mode = viewModel.state.playbackAnimationMode
-    )
-
-    LaunchedEffect(isPlaying, isPaused) {
-        if (!isPlaying) {
-            playbackElapsedMillis = 0L
-            return@LaunchedEffect
-        }
-
-        if (isPaused) {
-            return@LaunchedEffect
-        }
-
-        while (playbackElapsedMillis < playbackEndMillis) {
-            delay(16L)
-            playbackElapsedMillis += 16L
-        }
-
-        viewModel.stop()
-    }
 
     Column(
         modifier = modifier
@@ -207,7 +195,7 @@ fun DrawingScreen(
                     }
 
                     DropdownMenu(
-                        expanded = durationMenuExpanded,
+                        expanded = durationMenuExpanded && !isPlaying,
                         onDismissRequest = {
                             durationMenuExpanded = false
                         }
@@ -223,6 +211,7 @@ fun DrawingScreen(
                             16_000L
                         ).forEach { durationMillis ->
                             DropdownMenuItem(
+                                enabled = !isPlaying,
                                 text = {
                                     Text("${durationMillis / 1_000} s")
                                 },
@@ -251,13 +240,14 @@ fun DrawingScreen(
                     }
 
                     DropdownMenu(
-                        expanded = modeMenuExpanded,
+                        expanded = modeMenuExpanded && !isPlaying,
                         onDismissRequest = {
                             modeMenuExpanded = false
                         }
                     ) {
                         PlaybackAnimationMode.entries.forEach { mode ->
                             DropdownMenuItem(
+                                enabled = !isPlaying,
                                 text = {
                                     Text(
                                         when (mode) {
@@ -293,7 +283,7 @@ fun DrawingScreen(
                 SketchButton(onClick = viewModel::redo, enabled = viewModel.canRedo) {
                     Icon(Icons.AutoMirrored.Rounded.Redo, "Redo")
                 }
-                SketchButton(onClick = viewModel::clear, enabled = viewModel.state.strokes.isNotEmpty()) {
+                SketchButton(onClick = viewModel::clear, enabled = !isPlaying && viewModel.state.strokes.isNotEmpty()) {
                     Icon(Icons.Rounded.DeleteOutline, "Clear")
                 }
                 SketchButton(onClick = { /* TODO: Download */ }) {
@@ -321,6 +311,7 @@ fun DrawingScreen(
                         DrawingToolButton(
                             tool = tool,
                             selected = tool == viewModel.state.selectedTool,
+                            enabled = !isPlaying,
                             onClick = { viewModel.selectTool(tool) }
                         )
                     }
@@ -332,6 +323,7 @@ fun DrawingScreen(
                         LineStyleButton(
                             lineStyle = style,
                             selected = style == viewModel.state.selectedLineStyle,
+                            enabled = !isPlaying,
                             onClick = { viewModel.selectLineStyle(style) }
                         )
                     }
@@ -343,6 +335,7 @@ fun DrawingScreen(
                         DrawingColorButton(
                             drawingColor = color,
                             selected = color == viewModel.state.selectedColor,
+                            enabled = !isPlaying,
                             onClick = { viewModel.selectColor(color) }
                         )
                     }
@@ -367,12 +360,13 @@ fun DrawingScreen(
                     selectedLineStyle = viewModel.state.selectedLineStyle,
                     selectedColor = viewModel.state.selectedColor,
                     playheadX = playheadX,
-                    playbackElapsedMillis = playbackElapsedMillis,
+                    playbackElapsedMillis = viewModel.playbackElapsedMillis,
                     playbackController = playbackController,
                     playbackAnimationMode = viewModel.state.playbackAnimationMode,
                     isPlaying = isPlaying,
                     createStrokeId = viewModel::createStrokeId,
-                    onStrokeStarted = { id, tool, lineStyle, color ->
+                    onStrokeStarted = strokeStarted@{ id, tool, lineStyle, color ->
+                        if (viewModel.state.isPlaying) return@strokeStarted
                         val (red, green, blue) = color.toNormalizedRgb()
 
                         audioEngine.startDrawingStroke(
@@ -384,7 +378,8 @@ fun DrawingScreen(
                             blue = blue,
                         )
                     },
-                    onPointAdded = { id, x, y, elapsedMillis ->
+                    onPointAdded = pointAdded@{ id, x, y, elapsedMillis ->
+                        if (viewModel.state.isPlaying) return@pointAdded
                         audioEngine.sendDrawingPoint(
                             id = id,
                             x = x,
@@ -392,7 +387,8 @@ fun DrawingScreen(
                             elapsedMillis = elapsedMillis,
                         )
                     },
-                    onStrokeEnded = { id ->
+                    onStrokeEnded = strokeEnded@{ id ->
+                        if (viewModel.state.isPlaying) return@strokeEnded
                         audioEngine.endDrawingStroke(id)
                     },
                     onStrokeFinished = viewModel::addStroke,

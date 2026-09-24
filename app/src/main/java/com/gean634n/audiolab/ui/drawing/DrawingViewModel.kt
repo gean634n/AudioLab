@@ -237,6 +237,15 @@ class DrawingViewModel : ViewModel() {
         resetPlayback()
     }
 
+    override fun onCleared() {
+        if (state.isPlaying) {
+            sink.playbackAborted()
+        }
+        resetPlayback()
+        sink = NoopDrawingPlaybackSink
+        super.onCleared()
+    }
+
     private fun resetPlayback() {
         playbackJob?.cancel()
         playbackJob = null

@@ -67,6 +67,7 @@ class AudioEngine (
         oldTransport.close()
     }
 
+    @Synchronized
     private fun selectTransport(settings: AudioSettings) {
         val selectionVersion = transportSelectionVersion.incrementAndGet()
 
@@ -99,33 +100,36 @@ class AudioEngine (
 
             val computerAvailable = handshake.check()
 
-            if (selectionVersion != transportSelectionVersion.get()) {
-                executor.shutdown()
-                return@execute
-            }
+            // Keep version validation and installation atomic with stop().
+            synchronized(this@AudioEngine) {
+                if (selectionVersion != transportSelectionVersion.get()) {
+                    executor.shutdown()
+                    return@execute
+                }
 
-            replaceTransport(
-                AudioTransportFactory.create(
-                    settings = settings,
-                    computerAvailable = computerAvailable
+                replaceTransport(
+                    AudioTransportFactory.create(
+                        settings = settings,
+                        computerAvailable = computerAvailable
+                    )
                 )
-            )
 
-            _executionState.value =
-                if (computerAvailable) {
-                    AudioExecutionState.COMPUTER
-                } else {
-                    AudioExecutionState.COMPUTER_UNAVAILABLE
-                }
+                _executionState.value =
+                    if (computerAvailable) {
+                        AudioExecutionState.COMPUTER
+                    } else {
+                        AudioExecutionState.COMPUTER_UNAVAILABLE
+                    }
 
-            Log.d(
-                "AudioDebug",
-                if (computerAvailable) {
-                    "Transport: UDP"
-                } else {
-                    "Transport: LOCAL"
-                }
-            )
+                Log.d(
+                    "AudioDebug",
+                    if (computerAvailable) {
+                        "Transport: UDP"
+                    } else {
+                        "Transport: LOCAL"
+                    }
+                )
+            }
 
             executor.shutdown()
         }
@@ -148,11 +152,17 @@ class AudioEngine (
         selectTransport(settings)
     }
 
-    // TODO: Revisar o ciclo de vida do transporte.
-    //  Após close(), transport ainda referencia o objeto fechado.
-    //  Tratar corretamente o ciclo onStop -> onStart.
+    // TODO: Define background audio policy.
+    //  Volume and TouchPad currently keep producing audio while the app is
+    //  in the background. Decide whether AudioEngine should stop or mute
+    //  globally when the app leaves the foreground.
+    @Synchronized
     fun stop() {
-        transport.close()
+        transportSelectionVersion.incrementAndGet()
+        playAbort()
+        val old = transport
+        transport = NoopTransport
+        old.close()
         PdAudio.release()
     }
 

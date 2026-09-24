@@ -2,7 +2,6 @@ package com.gean634n.audiolab.settings
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.gean634n.audiolab.audio.AudioExecutionMode
@@ -15,8 +14,11 @@ private val Context.audioSettingsDataStore by preferencesDataStore(
 )
 
 class AudioSettingsStore(
-    private val context: Context
+    appContext: Context
 ) {
+    private val context = appContext.applicationContext
+    private val defaults = AudioSettings()
+
     private object Keys {
         val EXECUTION_MODE = stringPreferencesKey("execution_mode")
         val COMPUTER_HOST = stringPreferencesKey("computer_host")
@@ -32,11 +34,11 @@ class AudioSettingsStore(
                         AudioExecutionMode.entries
                             .firstOrNull { it.name == value }
                     }
-                    ?: AudioExecutionMode.DEVICE,
+                    ?: defaults.executionMode,
 
-                computerHost = preferences[Keys.COMPUTER_HOST] ?: "",
-                computerPort = preferences[Keys.COMPUTER_PORT] ?: "9000",
-                replyPort = preferences[Keys.REPLY_PORT] ?: "9001"
+                computerHost = preferences[Keys.COMPUTER_HOST] ?: defaults.computerHost,
+                computerPort = preferences[Keys.COMPUTER_PORT] ?: defaults.computerPort,
+                replyPort = preferences[Keys.REPLY_PORT] ?: defaults.replyPort
             )
         }
     suspend fun save(settings: AudioSettings) {

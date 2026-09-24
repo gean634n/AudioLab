@@ -25,7 +25,12 @@ class LibPdTransport : AudioTransport {
         receiver: String,
         vararg args: Any
     ) {
-        PdBase.sendList(receiver, *args)
+        val clean = sanitizeOscArgs(receiver, args) ?: return
+        if (clean.isEmpty()) {
+            PdBase.sendBang(receiver)
+        } else {
+            PdBase.sendList(receiver, *clean.toTypedArray())
+        }
     }
 
     override fun close() {

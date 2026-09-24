@@ -17,8 +17,10 @@ import kotlinx.coroutines.flow.update
 import kotlin.text.toInt
 
 class AudioEngine (
-    private val context: Context
+    appContext: Context
 ) {
+    private val context = appContext.applicationContext
+
     @Volatile
     private var transport: AudioTransport = LibPdTransport()
 

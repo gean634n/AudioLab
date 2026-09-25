@@ -16,6 +16,7 @@
 #X obj 179 142 list;
 #X msg 349 296 disconnect;
 #X obj 76 116 inlet;
+#X obj 330 114 print;
 #X connect 2 0 14 0;
 #X connect 2 0 9 0;
 #X connect 3 0 4 0;
@@ -33,3 +34,4 @@
 #X connect 14 0 10 0;
 #X connect 15 0 8 0;
 #X connect 16 0 2 0;
+#X connect 16 0 17 0;

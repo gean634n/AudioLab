@@ -2,8 +2,8 @@ package com.gean634n.audiolab.ui.drawing
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Brush
 import androidx.compose.material.icons.rounded.Create
-import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.HistoryEdu
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -28,7 +28,7 @@ fun DrawingToolButton(
     ) {
         val icon = when (tool) {
             DrawingTool.PENCIL -> Icons.Rounded.Create
-            DrawingTool.MARKER -> Icons.Rounded.Edit
+            DrawingTool.MARKER -> Icons.Rounded.Brush
             DrawingTool.NIB -> Icons.Rounded.HistoryEdu
         }
 
